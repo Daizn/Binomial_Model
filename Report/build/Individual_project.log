@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.5) (preloaded format=pdflatex 2026.10.22)  17 NOV 2026 14:26
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.5) (preloaded format=pdflatex 2026.10.22)  17 NOV 2026 15:34
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -422,24 +422,24 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 File: mt-msb.cfg 2005/06/01 v1.0 microtype config. file: AMS symbols (b) (RS)
 ) [1
 
-{C:/Users/Danie/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/Danie/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ec.enc}{C:/Users/Danie/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathit.enc}] (c:\Users\Danie\OneDrive\Desktop\Documents\Binomial_Model\Report\build\Individual_project.aux)
+{C:/Users/Danie/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/Danie/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ec.enc}{C:/Users/Danie/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathit.enc}{C:/Users/Danie/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-rm.enc}{C:/Users/Danie/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathsy.enc}] (c:\Users\Danie\OneDrive\Desktop\Documents\Binomial_Model\Report\build\Individual_project.aux)
  ***********
 LaTeX2e <2026-06-01>
 L3 programming layer <2026-09-09>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 9174 strings out of 467392
- 146972 string characters out of 5405638
- 602259 words of memory out of 5000000
- 38372 multiletter control sequences out of 15000+600000
- 669905 words of font info for 96 fonts, out of 8000000 for 9000
+ 9195 strings out of 467392
+ 147228 string characters out of 5405638
+ 605259 words of memory out of 5000000
+ 38374 multiletter control sequences out of 15000+600000
+ 674973 words of font info for 105 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  57i,5n,65p,1079b,264s stack positions out of 10000i,1000n,20000p,200000b,200000s
-<C:/Users/Danie/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx10.pfb><C:/Users/Danie/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx12.pfb><C:/Users/Danie/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi10.pfb><C:/Users/Danie/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr10.pfb><C:/Users/Danie/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr9.pfb><C:/Users/Danie/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmri9.pfb>
-Output written on c:\Users\Danie\OneDrive\Desktop\Documents\Binomial_Model\Report\build\Individual_project.pdf (1 page, 143212 bytes).
+<C:/Users/Danie/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx10.pfb><C:/Users/Danie/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx12.pfb><C:/Users/Danie/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi10.pfb><C:/Users/Danie/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi8.pfb><C:/Users/Danie/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr10.pfb><C:/Users/Danie/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr8.pfb><C:/Users/Danie/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr9.pfb><C:/Users/Danie/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmri10.pfb><C:/Users/Danie/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmri9.pfb><C:/Users/Danie/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy8.pfb>
+Output written on c:\Users\Danie\OneDrive\Desktop\Documents\Binomial_Model\Report\build\Individual_project.pdf (1 page, 193777 bytes).
 PDF statistics:
- 38 PDF objects out of 1000 (max. 8388607)
+ 63 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
- 22529 words of extra memory for PDF output out of 24883 (max. 10000000)
+ 24577 words of extra memory for PDF output out of 24883 (max. 10000000)
 

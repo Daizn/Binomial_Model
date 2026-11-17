@@ -58,8 +58,9 @@
 \end{center}
 \vspace{-7pt}
 \sect{0. Background and Plan.}
-The binomial model pf Cox, Ross and Rubinstein (CRR) values a European option with a finite sum. For increasing $n$ number of time periods, the option price of the binomial model converges to the black-Scholes model and it was obtained in [1, Sect. 7.4] by the central limit theorem (CLT). 
-
+The binomial model of Cox, Ross and Rubinstein (CRR) values a European option with a finite sum. For increasing $n$ number of time periods, the option price of the binomial model converges to the black-Scholes model and it was obtained in [1, Sect. 7.4] by the central limit theorem (CLT). The CLT proves the convergence theorem, but it has no rate, which is necessary in practice, as n is the cost of computation. The convergence is also not monotone since binomial prices oscillate around the limit. If n is doubled, the rate can make the error larger (Section 4).
+I prove that the the error is $O(1/n)$ for a call option, using the order $n^{-1/2}$ for the payoff with jump at the strike while including a oscillating leading term. The result is based of the expansion of the probability in binomial distributions. Next, we test from first principles the predictions using the cited formula for the coefficient of $1/n$. Section 5 tests the continutity assumption and section 6 justifies the assuptions I make.
+\emph{Key idea:} The core of my analysis is that every price combines the binomial tail probabilities and that a normal approximation with continuity correction shows that each tail carries the size $n^{-1/2}$. This records where the strike sits between two nodes of thr binomial tree, and for a continuous payoff, the two tails cancel each other out, leaving a $n^{-1}$ error. For a discontinuous payoff these terms cancel exactly.
 
 
 
