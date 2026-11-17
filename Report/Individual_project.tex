@@ -1,14 +1,85 @@
 \documentclass[11pt,a4paper]{article}
+\usepackage[margin=2cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx,booktabs,xcolor,listings,microtype}
+\usepackage[font=small,labelfont=bf,skip=3pt]{caption}
 
-\title{How fast does the binomial model converge to the Black-Scholes model?}
-\author{Daniel}
-\date{\today}
+% Compact spacing (the report has a 4-page limit)
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{2.4pt plus 1pt}
+\setlength{\abovedisplayskip}{4pt plus 1pt minus 1pt}
+\setlength{\belowdisplayskip}{4pt plus 1pt minus 1pt}
+\setlength{\abovedisplayshortskip}{2pt}
+\setlength{\belowdisplayshortskip}{3pt}
+\setlength{\textfloatsep}{6pt plus 2pt}
+\setlength{\floatsep}{5pt plus 2pt}
+\setlength{\intextsep}{5pt plus 2pt}
 
+% Theorems, lemmas, facts and definitions share one counter
+\newtheoremstyle{tight}{2.4pt}{0pt}{\itshape}{}{\bfseries}{.}{.5em}{}
+\newtheoremstyle{tightrm}{2.4pt}{0pt}{}{}{\bfseries}{.}{.5em}{}
+\theoremstyle{tight}
+\newtheorem{thm}{Theorem}
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{fact}[thm]{Fact}
+\theoremstyle{tightrm}
+\newtheorem{defn}[thm]{Definition}
+
+% Run-in section headings
+\newcommand{\sect}[1]{\par\vspace{1.5pt}\noindent\textbf{#1}\enspace}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\e}{\mathrm{e}}
+\newcommand{\one}{\mathbf{1}}
+
+% Proofs without extra vertical space
+\renewcommand{\qedsymbol}{$\square$}
+\renewenvironment{proof}[1][Proof]{\par\textit{#1.}\enspace}{\qed\par}
+
+% References printed as one compact paragraph
+\makeatletter
+\renewenvironment{thebibliography}[1]
+  {\par\vspace{1.5pt}\noindent\textbf{\refname}\enspace\footnotesize\setcounter{enumiv}{0}%
+   \def\bibitem##1{\ifnum\value{enumiv}>0 \unskip\hskip 0.7em plus 0.2em minus 0.2em\fi
+     \stepcounter{enumiv}[\arabic{enumiv}]~%
+     \if@filesw\immediate\write\@auxout{\string\bibcite{##1}{\arabic{enumiv}}}\fi\ignorespaces}}
+  {\par}
+\makeatother
+
+\lstset{basicstyle=\ttfamily\fontsize{6.6}{7.7}\selectfont,breaklines=true,columns=fullflexible,
+  keepspaces=true,showstringspaces=false,upquote=true}
 \begin{document}
+\begin{center}
+{\Large\bfseries How fast does the binomial model converge to Black-Scholes?}\\[1pt]
+{\large\bfseries The order of convergence for calls and for discontious payoffs}
+\end{center}
+\vspace{-7pt}
+\sect{0. Background and Plan.}
+The binomial model pf Cox, Ross and Rubinstein (CRR) values a European option with a finite sum. For increasing $n$ number of time periods, the option price of the binomial model converges to the black-Scholes model and it was obtained in [1, Sect. 7.4] by the central limit theorem (CLT). 
 
-\maketitle
-
-\section{Introduction}
 
 
-\end{document} 
+
+
+
+
+
+
+
+
+\begin {thebibliography}{9}
+\bibitem{bandtlow}O.~Bandtlow, \emph{MTH6154 Financial Mathematics I}, lecture notes, Queen Mary University of London, Semester A 2024.
+\bibitem{changpalmer}L.-B.~Chang, K.~Palmer, Smooth convergence in the binomial model, \emph{Finance Stoch.}\ 11 (2007), 91--105.
+\bibitem{diener}F.~Diener, M.~Diener, Asymptotics of the price oscillations of a European call option in a tree model, \emph{Math.\ Finance} 14 (2004), 271--293.
+\bibitem{feller}W.~Feller, \emph{An Introduction to Probability Theory and Its Applications}, Vol.~II, 2nd ed., Wiley, 1971.
+\bibitem{leisen}D.~Leisen, M.~Reimer, Binomial models for option valuation: examining and improving convergence, \emph{Appl.\ Math.\ Finance} 3 (1996), 319--346.
+\bibitem{uspensky}J.~V.~Uspensky, \emph{Introduction to Mathematical Probability}, McGraw--Hill, 1937.
+\bibitem{viitasaari}L.~Viitasaari, Rate of convergence for discrete approximation of option prices, arXiv:1207.6756v4, 2013.
+\end{thebibliography}
+
+
+
+\end{document}

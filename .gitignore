@@ -1,2 +1,5 @@
 /build/
 /.venv/
+/report/individual
+Report/build/
+Report/Individual_project.synctex.gz
