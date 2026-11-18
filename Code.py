@@ -1,4 +1,4 @@
-import sys, math
+import math
 from decimal import Decimal, getcontext
 import numpy as np
 import matplotlib.pyplot as plt
@@ -112,3 +112,53 @@ def exact_crr(S, K, r, sig, T, n):
     tail_p = tail(p)
     return S * tail(p_hat) - K * disc * tail_p, disc * tail_p
 
+#uspensky and berry-esseen
+def uspensky_check(S, K, r, sig, T, n):
+    #remainder omega and bound
+    p, _, a, _ = lattice(S, K, r, sig, T, n)
+    q = 1.0 - p
+    s = math.sqrt(n * p * q)
+    def G(t):
+        return Phi(t) + (q - p) / (6 * s) * (1 - t * t) * phi(t)
+    omega = binom_tail(n, p, a) - (G((n + 0.5 - n * p) / s) - G((a - 0.5 - n * p) / s))
+    bound = (0.13 + 0.18 * abs(p - q)) / s**2 + math.exp(-1.5 * s)
+    return s * s, omega, bound
+
+def berry_esseen(n, p):
+    #bound
+    return 3 * (p * p + (1 - p) ** 2) / math.sqrt(n * p * (1 - p))
+
+#Experiment section
+BASE = dict(S=100.0, K=110.0, r=0.05, sig=0.2, T=1.0)
+SETS = [("base  K=110", BASE), ("K=90", dict(BASE, K=90.0)), ("K=100.5", dict(BASE, K=100.5)), ("sig=0.4", dict(BASE, sig=0.4)), ("r=0, T=0.5", dict(BASE, r=0.0, T=0.5))]
+BLOCKS = [50, 100, 200, 400, 800, 1600, 3200]    
+
+def scan(par, n_lo=50, n_hi=6400):
+    #For every n in ...: n, C_n - C, D_n - D, Delta_n."""
+    _, _, C, D = bs(**par)
+    ns = np.arange(n_lo, n_hi)
+    prices = np.array([crr(n=int(n), **par) for n in ns])
+    return ns, prices[:, 0] - C, prices[:, 1] - D, prices[:, 2]
+
+def block_stats(par, ns, eC, eD, De):
+    #error stat for each block
+    f = call_coefficient(Delta=De, **par)
+    g = digital_coefficient(Delta=De, **par)
+    rows = []
+    for N in BLOCKS:
+        m = (ns >= N) & (ns < 2 * N)
+        n, c, d = ns[m], eC[m], eD[m]
+        k = np.argmin(np.abs(De[m]))
+        rows.append(dict(
+            N=N,
+            rmsC=math.sqrt(np.mean(c**2)), rmsD=math.sqrt(np.mean(d**2)),
+            maxC=np.max(np.abs(c)), maxD=np.max(np.abs(d)),
+            RC=np.max(np.sqrt(n) * np.abs(n * c - f[m])),
+            RD=np.max(np.sqrt(n) * np.abs(np.sqrt(n) * d - g[m])),
+            nstar=int(n[k]), Dstar=De[m][k], nstar_err=n[k] * abs(d[k]),
+            scaledD=np.max(np.sqrt(n) * np.abs(d))))
+    return rows
+
+def rate(rows, key):
+    #Slope of log(error)/log N
+    return slope([math.log(row["N"]) for row in rows], [math.log(row[key]) for row in rows])
