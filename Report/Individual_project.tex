@@ -45,8 +45,7 @@
    \def\bibitem##1{\ifnum\value{enumiv}>0 \unskip\hskip 0.7em plus 0.2em minus 0.2em\fi
      \stepcounter{enumiv}[\arabic{enumiv}]~\ignorespaces}}
   {\par}
-\lstset{basicstyle=\ttfamily\fontsize{6.6}{7.7}\selectfont,breaklines=true,columns=fullflexible,
-  keepspaces=true,showstringspaces=false,upquote=true}
+\lstset{basicstyle=\ttfamily\fontsize{6.6}{7.7}\selectfont,breaklines=true,columns=fullflexible, keepspaces=true,showstringspaces=false,upquote=true}
 \begin{document}
 \begin{center}
 {\Large\bfseries How fast does the binomial model converge to Black-Scholes?}\\[1pt]
@@ -103,13 +102,64 @@ Let $J\sim\mathrm{Bin}(n,p)$, $q=1-p$, $s=\sqrt{npq}\ge5$, and $G(t)=\Phi(t)+\df
 \]
 \end{fact}
 The shifts by $\tfrac12$ (the continuity correction) reflect that $J$ is integer-valued, and the second term of $G$ its skewness. As it is explicit, the fact applies with $p=p_n$ depending on $n$.
-
 \begin{fact}[Chang-Palmer {[2]}, as restated in {[Thm~4.3 ($\lambda_n=0$), Remark~4.3.1][7]}; and {[3]}]
 For the call, $C_n=C+f(\Delta_n)/n+O(n^{-3/2})$, where
 \[
 f(\Delta)=\frac{S\,\e^{-d_1^2/2}}{24\,\sigma\sqrt{2\pi T}}\Big(A-12\sigma^2T(\Delta^2-1)\Big),\qquad A=-\sigma^2T(6+d_1^2+d_2^2)+4T(d_1^2-d_2^2)\,r-12T^2r^2 .
 \]
 \end{fact}
+\sect{The theorem.}
+\begin{thm}
+Let $g$ be as in Definition~2. As $n\to\infty$,
+\[
+V_n(g)=V(g)+\e^{-rT}\varphi(d_2)\,[g]\,\frac{\Delta_n}{\sqrt n}+O\Big(\frac1n\Big).
+\]
+\textup{(a)} $C_n-C=O(1/n)$ for the call, and \textup{(b)}
+$D_n-D=\e^{-rT}\varphi(d_2)\,\Delta_n\,n^{-1/2}+O(1/n)$ for the digital call.
+\end{thm}
+Part (a) is due to Leisen and Reimer [5]. Part (b) is the leading term of the expansion in [2], and from that I apply Fact~5 to two tail probabilities. As I'm working in the first order, the proof below can be given in full; Fact~6, which goes one order further, is not proved here.
+\begin{lem}
+With $h=T/n$,
+\[
+p_n=\frac12+\frac{(r-\sigma^2/2)\sqrt h}{2\sigma}+O(h^{3/2})\qquad\text{and}\qquad \hat p_n=\frac12+\frac{(r+\sigma^2/2)\sqrt h}{2\sigma}+O(h^{3/2}).
+\]
+\end{lem}
+\begin{proof}
+Put $s=\sigma\sqrt h$. By Taylor's theorem, $\e^{rh}-\e^{-s}=s+(rh-\tfrac12s^2)+\tfrac16s^3+O(h^2)$ and $u-d=\e^s-\e^{-s}=2s\,(1+\tfrac16s^2+O(h^2))$. Dividing, $p_n=\tfrac12\big(1+\tfrac{rh-s^2/2}{s}+\tfrac16s^2+O(h^{3/2})\big)\big(1-\tfrac16s^2+O(h^2)\big)=\tfrac12+\tfrac{rh-s^2/2}{2s}+O(h^{3/2})$, since the terms $\pm\tfrac16s^2$ cancel. For $\hat p_n$, use $ud=1$ to write $\hat p_n=(u-\e^{-rh})/(u-d)$, where the numerator is $s+(rh+\tfrac12s^2)+\tfrac16s^3+O(h^2)$.
+\end{proof}
+\begin{lem}[Tail expansion]
+Let $\mu\in\R$, let $\pi_n\in(0,1)$ satisfy $\pi_n=\tfrac12+\mu\sqrt h/(2\sigma)+O(h^{3/2})$, and let $J\sim\mathrm{Bin}(n,\pi_n)$. Then, with $\delta=\big(\ln(S/K)+\mu T\big)/(\sigma\sqrt T)$,
+\[
+\Prob(J\ge a_n)=\Phi(\delta)+\varphi(\delta)\,\frac{\Delta_n}{\sqrt n}+O\Big(\frac1n\Big). 
+\]
+\end{lem}
+
+\subsect{Central argument: proof of Lemma~9.}
+Apply Fact~5 to $[a_n,n]$, remove every term that is $O(1/n)$, and then expand the remaining argument of $\Phi$ to order $n^{-1/2}$. Write $s_n=\sqrt{n\pi_n(1-\pi_n)}$.
+
+\emph{Step 1: Fact~5 applies.} Since $(\pi_n-\tfrac12)^2=O(h)=O(1/n)$, this yields $s_n^2=\tfrac n4-n(\pi_n-\tfrac12)^2=\tfrac n4+O(1)$; so $s_n=\tfrac{\sqrt n}2\,(1+O(1/n))$, and $s_n\ge5$ for large $n$. As $\alpha_n=\tfrac n2+O(\sqrt n)$, also $0\le a_n\le n$ for large $n$. With $t_n=(a_n-\tfrac12-n\pi_n)/s_n$ and $t_n'=(n+\tfrac12-n\pi_n)/s_n$ it follows that $\Prob(J\ge a_n)=G(t_n')-G(t_n)+\Omega_n$ with $\Omega_n=O(1/n)$.
+
+\emph{Step 2: the terms that are $O(1/n)$.} Since $|(1-t^2)\varphi(t)|\le1$ and $|1-2\pi_n|=O(n^{-1/2})$, this gives $|G(t)-\Phi(t)|\le|1-2\pi_n|/(6s_n)=O(1/n)$ for every $t$. Here I need $\pi_n\to\tfrac12$ at rate $n^{-1/2}$; for a fixed $\pi\ne\tfrac12$ the skewness term would be of order $n^{-1/2}$.
+Next, $t_n'\ge n(1-\pi_n)/s_n=\sqrt{n(1-\pi_n)/\pi_n}\ge\sqrt{n/2}$ once $\pi_n\le\tfrac23$, and for $t>0$, $1-\Phi(t)=\int_t^\infty\varphi(x)\,dx\le\int_t^\infty\tfrac xt\varphi(x)\,dx=\varphi(t)/t$, so $1-\Phi(t_n')=O(\e^{-n/4})$. Thus, $\Prob(J\ge a_n)=1-\Phi(t_n)+O(1/n)=\Phi(-t_n)+O(1/n)$.
+
+\emph{Step 3: expansion of $t_n$; where $\Delta_n$ appears.} Write $a_n=\alpha_n+\theta_n$ and $\theta_n-\tfrac12=-\tfrac12\Delta_n$. Then $a_n-\tfrac12-n\pi_n=\ln(K/S)/(2\sigma\sqrt h)-n(\pi_n-\tfrac12)+(\theta_n-\tfrac12)$, and since $1/\sqrt h=\sqrt{n/T}$, $n\sqrt h=\sqrt{nT}$ and $n\,O(h^{3/2})=O(n^{-1/2})$,
+\[
+a_n-\tfrac12-n\pi_n =\frac{\sqrt n}{2}\cdot\frac{\ln(K/S)-\mu T}{\sigma\sqrt T}-\frac{\Delta_n}{2}+O(n^{-1/2}) =-\frac{\sqrt n}{2}\,\delta-\frac{\Delta_n}{2}+O(n^{-1/2}).
+\]
+Dividing by $s_n=\tfrac{\sqrt n}{2}(1+O(1/n))$ gives $t_n=-\delta-\Delta_n/\sqrt n+O(1/n)$. This step uses two properties of $\pi_n$: its first-order coefficient, which gives $\delta$, and the size $O(h^{3/2})$ of its remainder. An error of order $h$ in $\pi_n$ would add $n\cdot O(h)=O(1)$ here, i.e.\ $O(n^{-1/2})$ in $t_n$, and break the result. The continuity correction $\tfrac12$ turns $\theta_n$ into $-\tfrac12\Delta_n$.
+
+\emph{Step 4: Taylor expansion.} $\Phi'=\varphi$ and $\Phi''(t)=-t\varphi(t)$ are bounded and $|\Delta_n|\le1$, so $\Phi(-t_n)=\Phi\big(\delta+\Delta_n/\sqrt n+O(1/n)\big)=\Phi(\delta)+\varphi(\delta)\Delta_n/\sqrt n+O(1/n)$. With Step 2 this proves the lemma.\qed
+
+\begin{proof}[Proof of Theorem~7]
+By Lemma~8, Lemma~9 applies to $\pi_n=p_n$ with $\mu=r-\sigma^2/2$, $\delta=d_2$, and to $\pi_n=\hat p_n$ with $\mu=r+\sigma^2/2$, $\delta=d_1$. Since both tails in Lemma~4 start at the same node $a_n$, they carry the same $\Delta_n$:
+\[
+V_n(g)=c_1S\,\Phi(d_1)+c_2\e^{-rT}\Phi(d_2)+\big(c_1S\varphi(d_1)+c_2\e^{-rT}\varphi(d_2)\big)\frac{\Delta_n}{\sqrt n}+O\Big(\frac1n\Big).
+\]
+Now $d_1^2-d_2^2=(d_1-d_2)(d_1+d_2)=2\ln(S/K)+2rT$, so $\varphi(d_1)/\varphi(d_2)=\e^{-(d_1^2-d_2^2)/2}=K\e^{-rT}/S$, that is
+$S\varphi(d_1)=K\e^{-rT}\varphi(d_2)$ (the identity used for the Greeks in [proof of Prop.~7.9][1]). Hence the bracket
+equals $\e^{-rT}\varphi(d_2)(c_1K+c_2)=\e^{-rT}\varphi(d_2)[g]$. For the call, $[g]=0$, so the $n^{-1/2}$ terms cancel.
+\end{proof}
+
 
 
 
