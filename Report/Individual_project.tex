@@ -5,7 +5,6 @@
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{graphicx,booktabs,xcolor,listings,microtype}
 \usepackage[font=small,labelfont=bf,skip=3pt]{caption}
-
 % Compact spacing (the report has a 4-page limit)
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{2.4pt plus 1pt}
@@ -16,7 +15,6 @@
 \setlength{\textfloatsep}{6pt plus 2pt}
 \setlength{\floatsep}{5pt plus 2pt}
 \setlength{\intextsep}{5pt plus 2pt}
-
 % Theorems, lemmas, facts and definitions share one counter
 \newtheoremstyle{tight}{2.4pt}{0pt}{\itshape}{}{\bfseries}{.}{.5em}{}
 \newtheoremstyle{tightrm}{2.4pt}{0pt}{}{}{\bfseries}{.}{.5em}{}
@@ -26,29 +24,27 @@
 \newtheorem{fact}[thm]{Fact}
 \theoremstyle{tightrm}
 \newtheorem{defn}[thm]{Definition}
-
-% Run-in section headings
-\newcommand{\sect}[1]{\par\vspace{1.5pt}\noindent\textbf{#1}\enspace}
-
+% Run-in section headings, numbered from 0
+\newcounter{sect}\setcounter{sect}{-1}
+\newcounter{subsect}[sect]
+\renewcommand{\thesubsect}{\thesect.\arabic{subsect}}
+\newcommand{\sect}[1]{\par\vspace{1.5pt}\noindent\stepcounter{sect}\textbf{\thesect. #1}\enspace}
+\newcommand{\subsect}[1]{\par\vspace{1.5pt}\noindent\stepcounter{subsect}\textbf{\thesubsect\ #1}\enspace}
+% Numbered methods (M1), (M2), ... in the numerical section
+\newcounter{meth}\renewcommand{\themeth}{M\arabic{meth}}
+\newcommand{\meth}{\stepcounter{meth}(\themeth)}
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\Prob}{\mathbb{P}}
 \newcommand{\e}{\mathrm{e}}
 \newcommand{\one}{\mathbf{1}}
-
 % Proofs without extra vertical space
-\renewcommand{\qedsymbol}{$\square$}
 \renewenvironment{proof}[1][Proof]{\par\textit{#1.}\enspace}{\qed\par}
-
 % References printed as one compact paragraph
-\makeatletter
 \renewenvironment{thebibliography}[1]
   {\par\vspace{1.5pt}\noindent\textbf{\refname}\enspace\footnotesize\setcounter{enumiv}{0}%
    \def\bibitem##1{\ifnum\value{enumiv}>0 \unskip\hskip 0.7em plus 0.2em minus 0.2em\fi
-     \stepcounter{enumiv}[\arabic{enumiv}]~%
-     \if@filesw\immediate\write\@auxout{\string\bibcite{##1}{\arabic{enumiv}}}\fi\ignorespaces}}
+     \stepcounter{enumiv}[\arabic{enumiv}]~\ignorespaces}}
   {\par}
-\makeatother
-
 \lstset{basicstyle=\ttfamily\fontsize{6.6}{7.7}\selectfont,breaklines=true,columns=fullflexible,
   keepspaces=true,showstringspaces=false,upquote=true}
 \begin{document}
@@ -57,14 +53,63 @@
 {\large\bfseries The order of convergence for calls and for discontious payoffs}
 \end{center}
 \vspace{-7pt}
-\sect{0. Background and Plan.}
+\sect{Background and Plan.}
 The binomial model of Cox, Ross and Rubinstein (CRR) values a European option with a finite sum. For increasing $n$ number of time periods, the option price of the binomial model converges to the black-Scholes model and it was obtained in [1, Sect. 7.4] by the central limit theorem (CLT). The CLT proves the convergence theorem, but it has no rate, which is necessary in practice, as n is the cost of computation. The convergence is also not monotone since binomial prices oscillate around the limit. If n is doubled, the rate can make the error larger (Section 4).
-I prove that the the error is $O(1/n)$ for a call option, using the order $n^{-1/2}$ for the payoff with jump at the strike while including a oscillating leading term. The result is based of the expansion of the probability in binomial distributions. Next, we test from first principles the predictions using the cited formula for the coefficient of $1/n$. Section 5 tests the continutity assumption and section 6 justifies the assuptions I make.
+I prove that the the error is $O(1/n)$ for a call option, using the order $n^{-1/2}$ for the payoff with jump at the strike while including a oscillating leading term. The result is based of the expansion of the probability in binomial distributions. Next, I test from first principles the predictions using the cited formula for the coefficient of $1/n$. Section 5 tests the continutity assumption and section 6 justifies the assuptions I make.
 \emph{Key idea:} The core of my analysis is that every price combines the binomial tail probabilities and that a normal approximation with continuity correction shows that each tail carries the size $n^{-1/2}$. This records where the strike sits between two nodes of thr binomial tree, and for a continuous payoff, the two tails cancel each other out, leaving a $n^{-1}$ error. For a discontinuous payoff these terms cancel exactly.
 
+\sect{Setting and definitions.} 
+\emph{Requirements:} I assume the probability topics up to the CLT, Taylor's theorem, and from Financial Mathematics~I [1] the multi-period binomial model, its risk-neutral pricing formula and the Black-Scholes formula. I define $\varphi(t)=\e^{-t^2/2}/\sqrt{2\pi}$ and $\Phi(t)=\int_{-\infty}^{t}\varphi$, and $x_n=O(y_n)$ means $|x_n|\le My_n$ for all $n\ge n_0$, where
+$M$ and $n_0$ depend only on the fixed parameters $S,K,\sigma,T>0$, $r\in\R$ (initial share price, strike, volatility, expiry, continuously compounded interest rate respectively) and on $c_1,c_2$ below.
 
+\begin{defn}[CRR model]
+For $n> r^2T/\sigma^2$ put $h=T/n$, $u=\e^{\sigma\sqrt h}$, $d=u^{-1}$. In each of $n$ periods of length $h$, the share price is multiplied by $u$ or by $d$. Then $d<\e^{rh}<u$ (no arbitrage), and we set
+\[
+p_n=\frac{\e^{rh}-d}{u-d},\qquad q_n=1-p_n,\qquad \hat p_n=p_nu\,\e^{-rh}.
+\]
 
+Under the risk-neutral distribution the price at expiry is $Su^{J}d^{\,n-J}$ with $J\sim\mathrm{Bin}(n,p_n)$ [Prop.~6.24][1]. Since $p_nu+q_nd=\e^{rh}$, we have $1-\hat p_n=q_nd\,\e^{-rh}$, so $\hat p_n\in(0,1)$.
+\end{defn}
 
+\begin{defn}[Payoffs and prices]
+For $c_1,c_2\in\R$ let $g(s)=(c_1s+c_2)\one_{\{s>K\}}$; its \emph{jump} at the strike is $[g]=c_1K+c_2$.
+The $n$-step binomial price of the European option paying $g(S(T))$ at time $T$ is $V_n(g)=\e^{-rT}\,\mathbb{E}\,g(Su^Jd^{\,n-J})$ [Thm~6.25][1], and its Black--Scholes price is
+\[
+V(g)=c_1S\,\Phi(d_1)+c_2\,\e^{-rT}\Phi(d_2),\qquad
+d_{1,2}=\frac{\ln(S/K)+(r\pm\sigma^2/2)T}{\sigma\sqrt T}
+\]
+[proof of Thm~7.3, eqs (26)-(27)][1]. The \emph{call} is $c_1=1,c_2=-K$, with payoff $(s-K)^+$, $[g]=0$
+and prices $C_n$, $C$; the \emph{digital call} is $c_1=0,c_2=1$, with payoff $\one_{\{s>K\}}$, $[g]=1$ and prices $D_n$, $D$.
+\end{defn}
+
+\begin{defn}[Position of the strike in the lattice]
+Let $\alpha_n=\tfrac n2+\dfrac{\ln(K/S)}{2\sigma\sqrt h}$. Since $Su^jd^{\,n-j}=S\e^{(2j-n)\sigma\sqrt h}$, the
+node $j$ is in the money, $Su^jd^{\,n-j}>K$, exactly when $j>\alpha_n$. Let $a_n=\lfloor\alpha_n\rfloor+1$ be
+the first such node, and put $\theta_n=a_n-\alpha_n\in(0,1]$ and $\Delta_n=1-2\theta_n\in[-1,1)$.
+\end{defn}
+So $\Delta_n=0$ when $K$ is midway (in log-price) between two neighbouring terminal nodes, and $\Delta_n=-1$ when a node is exactly at $K$.
+
+\sect{Results used.} Proving the first and the citing the other two results.
+\begin{lem}[Prices as tail probabilities]
+With $J\sim\mathrm{Bin}(n,p_n)$ and $\hat J\sim\mathrm{Bin}(n,\hat p_n)$, $V_n(g)=c_1S\,\Prob(\hat J\ge a_n)+c_2\,\e^{-rT}\,\Prob(J\ge a_n)$.
+\end{lem}
+\begin{proof}
+By Definitions~2 and~3, $V_n(g)=\e^{-rT}\sum_{j\ge a_n}(c_1Su^jd^{\,n-j}+c_2)\binom nj p_n^jq_n^{\,n-j}$. Since $\e^{-rT}=\e^{-rhj}\e^{-rh(n-j)}$, Definition~1 gives $\e^{-rT}u^jd^{\,n-j}p_n^jq_n^{\,n-j}=\hat p_n^{\,j}(1-\hat p_n)^{n-j}$, and this is the claim used.
+\end{proof}
+\begin{fact}[Uspensky {[Ch.~VII, p.~129][6]}]
+Let $J\sim\mathrm{Bin}(n,p)$, $q=1-p$, $s=\sqrt{npq}\ge5$, and $G(t)=\Phi(t)+\dfrac{q-p}{6s}(1-t^2)\varphi(t)$. Then for all integers $0\le a\le b\le n$,
+\[
+\Prob(a\le J\le b)=G\Big(\frac{b+\frac12-np}{s}\Big)-G\Big(\frac{a-\frac12-np}{s}\Big)+\Omega, \qquad |\Omega|<\frac{0.13+0.18\,|p-q|}{s^2}+\e^{-3s/2}.
+\]
+\end{fact}
+The shifts by $\tfrac12$ (the continuity correction) reflect that $J$ is integer-valued, and the second term of $G$ its skewness. As it is explicit, the fact applies with $p=p_n$ depending on $n$.
+
+\begin{fact}[Chang-Palmer {[2]}, as restated in {[Thm~4.3 ($\lambda_n=0$), Remark~4.3.1][7]}; and {[3]}]
+For the call, $C_n=C+f(\Delta_n)/n+O(n^{-3/2})$, where
+\[
+f(\Delta)=\frac{S\,\e^{-d_1^2/2}}{24\,\sigma\sqrt{2\pi T}}\Big(A-12\sigma^2T(\Delta^2-1)\Big),\qquad A=-\sigma^2T(6+d_1^2+d_2^2)+4T(d_1^2-d_2^2)\,r-12T^2r^2 .
+\]
+\end{fact}
 
 
 
