@@ -46,20 +46,21 @@
      \stepcounter{enumiv}[\arabic{enumiv}]~\ignorespaces}}
   {\par}
 \lstset{basicstyle=\ttfamily\fontsize{6.6}{7.7}\selectfont,breaklines=true,columns=fullflexible, keepspaces=true,showstringspaces=false,upquote=true}
+\usepackage[colorlinks=true,linkcolor=black,citecolor=black,urlcolor=blue]{hyperref}
 \begin{document}
 \begin{center}
 {\Large\bfseries How fast does the binomial model converge to Black-Scholes?}\\[1pt]
-{\large\bfseries The order of convergence for calls and for discontious payoffs}
+{\large\bfseries The order of convergence for calls and for discontinuous payoffs}
 \end{center}
 \vspace{-7pt}
-\sect{Background and Plan.}
-The binomial model of Cox, Ross and Rubinstein (CRR) values a European option with a finite sum. For increasing $n$ number of time periods, the option price of the binomial model converges to the black-Scholes model and it was obtained in [1, Sect. 7.4] by the central limit theorem (CLT). The CLT proves the convergence theorem, but it has no rate, which is necessary in practice, as n is the cost of computation. The convergence is also not monotone since binomial prices oscillate around the limit. If n is doubled, the rate can make the error larger (Section 4).
-I prove that the the error is $O(1/n)$ for a call option, using the order $n^{-1/2}$ for the payoff with jump at the strike while including a oscillating leading term. The result is based of the expansion of the probability in binomial distributions. Next, I test from first principles the predictions using the cited formula for the coefficient of $1/n$. Section 5 tests the continutity assumption and section 6 justifies the assuptions.
-\emph{Key idea:} The core of my analysis is that every price combines the binomial tail probabilities and that a normal approximation with continuity correction shows that each tail carries the size $n^{-1/2}$. This records where the strike sits between two nodes of thr binomial tree, and for a continuous payoff, the two tails cancel each other, leaving $n^{-1}$ error. For a discontinuous payoff these terms cancel exactly.
+\sect{Background and plan.}
+The binomial model of Cox, Ross and Rubinstein (CRR) values a European option by a finite sum. As the number $n$ of time periods grows, its price converges to the Black--Scholes price; this was proved in [1, Sect.~7.4] by the central limit theorem (CLT). The CLT gives no rate, yet the cost of computation grows with $n$. Nor is the convergence monotone: prices oscillate around the limit, and doubling $n$ can make the error larger (Section~4).
+We prove (Theorem~7) that the error is $O(1/n)$ for a call, but has an oscillating leading term of order $n^{-1/2}$ for a payoff with a jump at the strike. We then test these predictions, and the cited coefficient of $1/n$ for the call, with code written from first principles (Section~4). Section~5 tests the continuity assumption; Section~6 justifies the choice of normal approximation.
+\emph{Key idea:} every price combines two binomial tail probabilities, and a normal approximation with continuity correction shows that each tail carries a term of size $n^{-1/2}$ recording where the strike sits between two nodes of the tree. For a continuous payoff these terms cancel, leaving an $O(1/n)$ error; for a discontinuous one they do not.
 
 \sect{Setting and definitions.} 
-\emph{Requirements:} I assume the probability topics up to the CLT, Taylor's theorem, and from Financial Mathematics~I [1] the multi-period binomial model, its risk-neutral pricing formula and the Black-Scholes formula. I define $\varphi(t)=\e^{-t^2/2}/\sqrt{2\pi}$ and $\Phi(t)=\int_{-\infty}^{t}\varphi$, and $x_n=O(y_n)$ means $|x_n|\le My_n$ for all $n\ge n_0$, where
-$M$ and $n_0$ depend only on the fixed parameters $S,K,\sigma,T>0$, $r\in\R$ (initial share price, strike, volatility, expiry, continuously compounded interest rate respectively) and on $c_1,c_2$ below.
+\emph{Prerequisites:} probability up to the CLT, Taylor's theorem, and from Financial Mathematics~I [1] the multi-period binomial model, its risk-neutral pricing formula and the Black--Scholes formula. We define $\varphi(t)=\e^{-t^2/2}/\sqrt{2\pi}$ and $\Phi(t)=\int_{-\infty}^{t}\varphi$, and $x_n=O(y_n)$ means $|x_n|\le My_n$ for all $n\ge n_0$, where
+$M$ and $n_0$ depend only on the fixed parameters $S,K,\sigma,T>0$, $r\in\R$ (spot price, strike, volatility, expiry, continuously compounded interest rate) and on $c_1,c_2$ below.
 
 \begin{defn}[CRR model]
 For $n> r^2T/\sigma^2$ put $h=T/n$, $u=\e^{\sigma\sqrt h}$, $d=u^{-1}$. In each of $n$ periods of length $h$, the share price is multiplied by $u$ or by $d$. Then $d<\e^{rh}<u$ (no arbitrage), and we set
@@ -67,17 +68,17 @@ For $n> r^2T/\sigma^2$ put $h=T/n$, $u=\e^{\sigma\sqrt h}$, $d=u^{-1}$. In each 
 p_n=\frac{\e^{rh}-d}{u-d},\qquad q_n=1-p_n,\qquad \hat p_n=p_nu\,\e^{-rh}.
 \]
 
-Under the risk-neutral distribution the price at expiry is $Su^{J}d^{\,n-J}$ with $J\sim\mathrm{Bin}(n,p_n)$ [Prop.~6.24][1]. Since $p_nu+q_nd=\e^{rh}$, we have $1-\hat p_n=q_nd\,\e^{-rh}$, so $\hat p_n\in(0,1)$.
+Under the risk-neutral distribution the price at expiry is $Su^{J}d^{\,n-J}$ with $J\sim\mathrm{Bin}(n,p_n)$ [1, Prop.~6.24]. Since $p_nu+q_nd=\e^{rh}$, we have $1-\hat p_n=q_nd\,\e^{-rh}$, so $\hat p_n\in(0,1)$.
 \end{defn}
 
 \begin{defn}[Payoffs and prices]
 For $c_1,c_2\in\R$ let $g(s)=(c_1s+c_2)\one_{\{s>K\}}$; its \emph{jump} at the strike is $[g]=c_1K+c_2$.
-The $n$-step binomial price of the European option paying $g(S(T))$ at time $T$ is $V_n(g)=\e^{-rT}\,\mathbb{E}\,g(Su^Jd^{\,n-J})$ [Thm~6.25][1], and its Black--Scholes price is
+The $n$-step binomial price of the European option paying $g(S(T))$ at time $T$ is $V_n(g)=\e^{-rT}\,\mathbb{E}\,g(Su^Jd^{\,n-J})$ [1, Thm~6.25], and its Black--Scholes price is
 \[
 V(g)=c_1S\,\Phi(d_1)+c_2\,\e^{-rT}\Phi(d_2),\qquad
 d_{1,2}=\frac{\ln(S/K)+(r\pm\sigma^2/2)T}{\sigma\sqrt T}
 \]
-[proof of Thm~7.3, eqs (26)-(27)][1]. The \emph{call} is $c_1=1,c_2=-K$, with payoff $(s-K)^+$, $[g]=0$
+[1, proof of Thm~7.3, eqs (26)--(27)]. The \emph{call} is $c_1=1,c_2=-K$, with payoff $(s-K)^+$, $[g]=0$
 and prices $C_n$, $C$; the \emph{digital call} is $c_1=0,c_2=1$, with payoff $\one_{\{s>K\}}$, $[g]=1$ and prices $D_n$, $D$.
 \end{defn}
 
@@ -88,21 +89,21 @@ the first such node, and put $\theta_n=a_n-\alpha_n\in(0,1]$ and $\Delta_n=1-2\t
 \end{defn}
 So $\Delta_n=0$ when $K$ is midway (in log-price) between two neighbouring terminal nodes, and $\Delta_n=-1$ when a node is exactly at $K$.
 
-\sect{Results used.} Proving the first and citing the other two results. 
+\sect{Results used.} We prove Lemma~4 and cite Facts~5 and~6.
 \begin{lem}[Prices as tail probabilities] 
 With $J\sim\mathrm{Bin}(n,p_n)$ and $\hat J\sim\mathrm{Bin}(n,\hat p_n)$, $V_n(g)=c_1S\,\Prob(\hat J\ge a_n)+c_2\,\e^{-rT}\,\Prob(J\ge a_n)$.
 \end{lem}
 \begin{proof}
-By Definitions~2 and~3, $V_n(g)=\e^{-rT}\sum_{j\ge a_n}(c_1Su^jd^{\,n-j}+c_2)\binom nj p_n^jq_n^{\,n-j}$. Since $\e^{-rT}=\e^{-rhj}\e^{-rh(n-j)}$, Definition~1 gives $\e^{-rT}u^jd^{\,n-j}p_n^jq_n^{\,n-j}=\hat p_n^{\,j}(1-\hat p_n)^{n-j}$, and this is the claim used.
+By Definitions~2 and~3, $V_n(g)=\e^{-rT}\sum_{j\ge a_n}(c_1Su^jd^{\,n-j}+c_2)\binom nj p_n^jq_n^{\,n-j}$. Since $\e^{-rT}=\e^{-rhj}\e^{-rh(n-j)}$, Definition~1 gives $\e^{-rT}u^jd^{\,n-j}p_n^jq_n^{\,n-j}=\hat p_n^{\,j}(1-\hat p_n)^{n-j}$. Summing over $j\ge a_n$ gives the two terms.
 \end{proof}
-\begin{fact}[Uspensky {[Ch.~VII, p.~129][6]}]
+\begin{fact}[Uspensky {[6, Ch.~VII, p.~129]}]
 Let $J\sim\mathrm{Bin}(n,p)$, $q=1-p$, $s=\sqrt{npq}\ge5$, and $G(t)=\Phi(t)+\dfrac{q-p}{6s}(1-t^2)\varphi(t)$. Then for all integers $0\le a\le b\le n$,
 \[
 \Prob(a\le J\le b)=G\Big(\frac{b+\frac12-np}{s}\Big)-G\Big(\frac{a-\frac12-np}{s}\Big)+\Omega, \qquad |\Omega|<\frac{0.13+0.18\,|p-q|}{s^2}+\e^{-3s/2}.
 \]
 \end{fact}
 The shifts by $\tfrac12$ (the continuity correction) reflect that $J$ is integer-valued, and the second term of $G$ its skewness. As it is explicit, the fact applies with $p=p_n$ depending on $n$.
-\begin{fact}[Chang-Palmer {[2]}, as restated in {[Thm~4.3 ($\lambda_n=0$), Remark~4.3.1][7]}; and {[3]}]
+\begin{fact}[Chang--Palmer {[2]}, as restated in {[7, Thm~3.2(2) with $\lambda_n=0$, Rem.~3.5]}; see also {[3]}]
 For the call, $C_n=C+f(\Delta_n)/n+O(n^{-3/2})$, where
 \[
 f(\Delta)=\frac{S\,\e^{-d_1^2/2}}{24\,\sigma\sqrt{2\pi T}}\Big(A-12\sigma^2T(\Delta^2-1)\Big),\qquad A=-\sigma^2T(6+d_1^2+d_2^2)+4T(d_1^2-d_2^2)\,r-12T^2r^2 .
@@ -117,7 +118,7 @@ V_n(g)=V(g)+\e^{-rT}\varphi(d_2)\,[g]\,\frac{\Delta_n}{\sqrt n}+O\Big(\frac1n\Bi
 \textup{(a)} $C_n-C=O(1/n)$ for the call, and \textup{(b)}
 $D_n-D=\e^{-rT}\varphi(d_2)\,\Delta_n\,n^{-1/2}+O(1/n)$ for the digital call.
 \end{thm}
-Part (a) is due to Leisen and Reimer [5]. Part (b) is the leading term of the expansion in [2], and from that I apply Fact~5 to two tail probabilities. As I'm working in the first order, the proof below can be given in full; Fact~6, which goes one order further, is not proved here.
+Part (a) is due to Leisen and Reimer [5], and (b) is the leading term of the expansion in [2] (see [7, Thm~3.2(1)]). Working only to first order, we can give the proof in full by applying Fact~5 to the two tails of Lemma~4; Fact~6, one order further, is not proved here.
 \begin{lem}
 With $h=T/n$,
 \[
@@ -139,7 +140,7 @@ Apply Fact~5 to $[a_n,n]$, remove every term that is $O(1/n)$, and then expand t
 
 \emph{Step 1: Fact~5 applies.} Since $(\pi_n-\tfrac12)^2=O(h)=O(1/n)$, this yields $s_n^2=\tfrac n4-n(\pi_n-\tfrac12)^2=\tfrac n4+O(1)$; so $s_n=\tfrac{\sqrt n}2\,(1+O(1/n))$, and $s_n\ge5$ for large $n$. As $\alpha_n=\tfrac n2+O(\sqrt n)$, also $0\le a_n\le n$ for large $n$. With $t_n=(a_n-\tfrac12-n\pi_n)/s_n$ and $t_n'=(n+\tfrac12-n\pi_n)/s_n$ it follows that $\Prob(J\ge a_n)=G(t_n')-G(t_n)+\Omega_n$ with $\Omega_n=O(1/n)$.
 
-\emph{Step 2: the terms that are $O(1/n)$.} Since $|(1-t^2)\varphi(t)|\le1$ and $|1-2\pi_n|=O(n^{-1/2})$, this gives $|G(t)-\Phi(t)|\le|1-2\pi_n|/(6s_n)=O(1/n)$ for every $t$. Here I need $\pi_n\to\tfrac12$ at rate $n^{-1/2}$; for a fixed $\pi\ne\tfrac12$ the skewness term would be of order $n^{-1/2}$.
+\emph{Step 2: the terms that are $O(1/n)$.} Since $|(1-t^2)\varphi(t)|\le1$ and $|1-2\pi_n|=O(n^{-1/2})$, this gives $|G(t)-\Phi(t)|\le|1-2\pi_n|/(6s_n)=O(1/n)$ for every $t$. Here we need $\pi_n\to\tfrac12$ at rate $n^{-1/2}$; for a fixed $\pi\ne\tfrac12$ the skewness term would be of order $n^{-1/2}$.
 Next, $t_n'\ge n(1-\pi_n)/s_n=\sqrt{n(1-\pi_n)/\pi_n}\ge\sqrt{n/2}$ once $\pi_n\le\tfrac23$, and for $t>0$, $1-\Phi(t)=\int_t^\infty\varphi(x)\,dx\le\int_t^\infty\tfrac xt\varphi(x)\,dx=\varphi(t)/t$, so $1-\Phi(t_n')=O(\e^{-n/4})$. Thus, $\Prob(J\ge a_n)=1-\Phi(t_n)+O(1/n)=\Phi(-t_n)+O(1/n)$.
 
 \emph{Step 3: expansion of $t_n$; where $\Delta_n$ appears.} Write $a_n=\alpha_n+\theta_n$ and $\theta_n-\tfrac12=-\tfrac12\Delta_n$. Then $a_n-\tfrac12-n\pi_n=\ln(K/S)/(2\sigma\sqrt h)-n(\pi_n-\tfrac12)+(\theta_n-\tfrac12)$, and since $1/\sqrt h=\sqrt{n/T}$, $n\sqrt h=\sqrt{nT}$ and $n\,O(h^{3/2})=O(n^{-1/2})$,
@@ -156,22 +157,22 @@ By Lemma~8, Lemma~9 applies to $\pi_n=p_n$ with $\mu=r-\sigma^2/2$, $\delta=d_2$
 V_n(g)=c_1S\,\Phi(d_1)+c_2\e^{-rT}\Phi(d_2)+\big(c_1S\varphi(d_1)+c_2\e^{-rT}\varphi(d_2)\big)\frac{\Delta_n}{\sqrt n}+O\Big(\frac1n\Big).
 \]
 Now $d_1^2-d_2^2=(d_1-d_2)(d_1+d_2)=2\ln(S/K)+2rT$, so $\varphi(d_1)/\varphi(d_2)=\e^{-(d_1^2-d_2^2)/2}=K\e^{-rT}/S$, that is
-$S\varphi(d_1)=K\e^{-rT}\varphi(d_2)$ (the identity used for the Greeks in [proof of Prop.~7.9][1]). Hence the bracket
+$S\varphi(d_1)=K\e^{-rT}\varphi(d_2)$ (the identity used for the Greeks in [1, proof of Prop.~7.9]). Hence the bracket
 equals $\e^{-rT}\varphi(d_2)(c_1K+c_2)=\e^{-rT}\varphi(d_2)[g]$. For the call, $[g]=0$, so the $n^{-1/2}$ terms cancel.
 \end{proof}
 
 \sect{Numerical investigation.}
-\emph{Methods.} Run \texttt{python crr\_convergence.py}. It uses only arrays, elementary arithmetic, sums and cumulative products.\\
-\meth{} \emph{Normal distribution function.} $y(x)=\int_0^x\e^{-t^2/2}dt\cdot\e^{x^2/2}$ solves $y'=1+xy$, $y(0)=0$, whose power-series solution is $\sum_{k\ge0}x^{2k+1}/(1\cdot3\cdots(2k+1))$. Hence $\Phi(x)=\tfrac12+\varphi(x)\sum_{k\ge0}x^{2k+1}/(1\cdot3\cdots(2k+1))$. Every term has the sign of $x$, so nothing cancels and I stop once a term is below $10^{-18}$ of the sum.\\
+\emph{Methods.} Run \texttt{python Code.py} from the project folder (Python 3.14.6, NumPy 2.5.5, Matplotlib 3.11.2; no random numbers); it writes \texttt{crr\_results.txt} and Figure~1. It uses only arrays, elementary functions, sums and cumulative products.\\
+\meth{} \emph{Normal distribution function.} $y(x)=\e^{x^2/2}\int_0^x\e^{-t^2/2}dt$ solves $y'=1+xy$, $y(0)=0$, whose power-series solution is $\sum_{k\ge0}x^{2k+1}/(1\cdot3\cdots(2k+1))$. Hence $\Phi(x)=\tfrac12+\varphi(x)\,y(x)$. Every term of the series has the sign of $x$, so it has no cancellation; we stop once a term is below $10^{-18}$ of the sum. For $|x|>8$, $\Phi(x)$ is set to $0$ or $1$.\\
 \meth{} \emph{Binomial prices.} Unnormalised weights $w_j\propto\Prob(J=j)$ are built from the mode by the exact ratios $\Prob(J=j+1)/\Prob(J=j)=(n-j)p/((j+1)q)$; after normalisation, Lemma~4 gives the prices.\\
-\meth{} \emph{Rounding error.} For $n=10,100,1000,6399,20000$ a separate routine recomputed the prices in 60-digit decimal arithmetic with exact integer binomial coefficients. The double-precision $C_n$ and $D_n$ differ by at most $5.9\cdot10^{-13}$ and $1.7\cdot10^{-12}$, and $C$, $D$ by less than $4\cdot10^{-15}$, which are measured discrepancies, not bounds.\\
-\meth{} \emph{Design.} Base case $S=100$, $K=110$, $r=0.05$, $\sigma=0.2$, $T=1$, where $C=6.040088$, $D=0.353861$, $\e^{-rT}\varphi(d_2)=0.35978$. Computing $C_n,D_n$ for \emph{all} $50\le n<6400$ and summarise each block $N\le n<2N$ by its root-mean-square error and by
+\meth{} \emph{Rounding error.} For $n=10,100,1000,6399,20000$ a separate routine recomputed the prices in 60-digit decimal arithmetic with exact integer binomial coefficients. The double-precision $C_n$ and $D_n$ differ by at most $5.9\cdot10^{-13}$ and $1.7\cdot10^{-12}$, and $C$, $D$ by less than $4\cdot10^{-15}$ (measured, not bounds).\\
+\meth{} \emph{Design.} Base case $S=100$, $K=110$, $r=0.05$, $\sigma=0.2$, $T=1$, where $C=6.040088$, $D=0.353861$, $\e^{-rT}\varphi(d_2)=0.35978$. We compute $C_n,D_n$ for \emph{all} $50\le n<6400$ and summarise each block $N\le n<2N$ by its root-mean-square error and by
 \[
 R_C(N)=\max_{N\le n<2N}\sqrt n\,\big|n(C_n-C)-f(\Delta_n)\big|,\qquad R_D(N)=\max_{N\le n<2N}\sqrt n\,\big|\sqrt n(D_n-D)-\e^{-rT}\varphi(d_2)\Delta_n\big| .
 \]
-$R_C$ stays bounded exactly when the remainder in Fact~6 is $O(n^{-3/2})$ along the scan, and $R_D$ exactly when the remainder in Theorem~7(b) is $O(1/n)$. I estimate rates by the least-squares slope of $\log(\text{r.m.s.\ error})$ against $\log N$ over the seven blocks. Block maxima(attained only when $|\Delta_n|\approx1$ early in a block) give noisier slopes, $-0.937$ and $-0.477$. Four other parameter sets repeat the scan.
+Fact~6 and Theorem~7(b) predict that $R_C(N)$ and $R_D(N)$ stay bounded as $N$ grows. Rates are the least-squares slopes of $\log(\text{r.m.s.\ error})$ against $\log N$ over the seven blocks; block maxima (attained when $|\Delta_n|\approx1$ early in a block) give noisier slopes, $-0.937$ and $-0.477$. Four other parameter sets repeat the scan.
 
-\begin{table}[h]\centering\footnotesize\renewcommand{\arraystretch}{0.9}
+\begin{table}[ht]\centering\footnotesize\renewcommand{\arraystretch}{0.9}
 \begin{tabular}{@{}rcccccc@{}}\toprule
 $N$ & r.m.s.\ $C_n-C$ & r.m.s.\ $D_n-D$ & $R_C(N)$ & $R_D(N)$ & $n^*$ & $n^*|D_{n^*}-D|$\\\midrule
 50   & $1.53\cdot10^{-2}$ & $2.39\cdot10^{-2}$ & 0.229 & 0.0835 & 71   & 0.073\\
@@ -185,36 +186,36 @@ slope & $-0.991$ & $-0.497$ & & & & \\\bottomrule
 \end{tabular}
 \caption{Base case, blocks $N\le n<2N$. In the last two columns $n^*$ is the $n$ of the block with $\Delta_n$ nearest $0$ (Section~5).}
 \end{table}
-\begin{figure}[h]\centering
+\begin{figure}[ht]\centering
 \includegraphics[width=\textwidth]{crr_figure.pdf}
 \caption{Base case. (a) Errors for every $n$, with the envelopes predicted by Fact~6 and Theorem~7(b). (b), (c) Scaled errors against $\Delta_n$ for $3200\le n<6400$, drawn on top of the predicted curves.}
 \end{figure}
 
 \emph{Results.} (i) \emph{Rates.} Against the predicted $-1$ and $-\tfrac12$, the fitted slopes are $-0.991$ for the call and $-0.497$ for the digital (Table~1). For $K=90$; $K=100.5$; $\sigma=0.4$; and $r=0$, $T=\tfrac12$ (other parameters as in the base case) they are $-1.005,-0.960,-1.006,-1.013$ for the call and $-0.504,-0.486,-0.506,-0.503$ for the digital. Slopes like these depend on how $\Delta_n$ samples $[-1,1)$ within each block. Agreement is worst for $K=100.5$, where $\ln(K/S)$ is small and $\Delta_n$ moves slowly.
 
-(ii) \emph{Coefficients.} Sharper test compares the errors with the predicted leading terms. For $50\le n<6400$, $R_D$ stays between $0.083$ and $0.087$ which Theorem~7(b) requires; for $n\ge3200$ the least-squares slope of $\sqrt n(D_n-D)$ on $\Delta_n$ is $0.35977$, against $\e^{-rT}\varphi(d_2)=0.35978$ (Figure~1(c)). $R_C$ stays at $0.229$--$0.230$, so on this range $n(C_n-C)$ agrees with $f(\Delta_n)$ to within $0.23\,n^{-1/2}$. In Figure~1(b) the $3200$ points fall on the parabola $f$, which runs from $f(\pm1)=-2.416$ to $f(0)=1.542$. $R_C$ and $R_D$ also stay bounded in the other four parameter sets (last-block values $0.54,0.22,0.23,0.41$ and $0.100,0.017,0.059,0.117$). This alligns with Fact~6 observed on a finite range.
+(ii) \emph{Coefficients.} A sharper test compares the errors with the predicted leading terms. For $50\le n<6400$, $R_D$ stays between $0.083$ and $0.087$, as Theorem~7(b) predicts; for $n\ge3200$ the least-squares slope of $\sqrt n(D_n-D)$ on $\Delta_n$ is $0.35977$, against $\e^{-rT}\varphi(d_2)=0.35978$ (Figure~1(c)). $R_C$ stays at $0.229$--$0.230$, so on this range $n(C_n-C)$ agrees with $f(\Delta_n)$ to within $0.23\,n^{-1/2}$. In Figure~1(b) the $3200$ points fall on the parabola $f$, which runs from $f(\pm1)=-2.416$ to $f(0)=1.542$. $R_C$ and $R_D$ also stay bounded in the other four parameter sets (last-block values $0.54,0.22,0.23,0.41$ and $0.100,0.017,0.059,0.117$). This agrees with Fact~6, observed on a finite range.
 
 (iii) \emph{Oscillation.} Since $f$ changes sign, $C_n-C$ does too. $|C_{n+1}-C|>|C_n-C|$ for $50.0\%$ of the $n$, and $|C_{2n}-C|>|C_n-C|$ for $702$ out of the $3150$ values $50\le n<3200$; for instance $|C_{250}-C|=1.69\cdot10^{-3}$ while $|C_{500}-C|=2.13\cdot10^{-3}$. The error is driven by $\Delta_n$.
 
-(iv) \emph{Limits of the experiment.} At $n=10^4,10^5,10^6$, $\sqrt n\,(n(C_n-C)-f(\Delta_n))$ equals $0.223,-0.163,-0.213$, still within $\pm0.23$. At $n=10^7$ it is $0.446$. By then the remainder, about $0.23\,n^{-3/2}\approx7\cdot10^{-12}$, has reached the level of the rounding error in $C_n$ (M3), rendering the test ineffective.
+(iv) \emph{Limits of the experiment.} At $n=10^4,10^5,10^6$, $\sqrt n\,(n(C_n-C)-f(\Delta_n))$ equals $0.223,-0.163,-0.213$, still within $\pm0.23$. At $n=10^7$ it is $0.446$. By then the remainder, about $0.23\,n^{-3/2}\approx7\cdot10^{-12}$, is consistent with rounding error in $C_n$, which M3 did not measure at this $n$; the test is no longer informative.
 
-(v) For $n=101$, $6400$ the actual $\Omega$ in Fact~5 is $7.6\cdot10^{-5}$, $1.5\cdot10^{-6}$, within the bounds $5.8\cdot10^{-3}$, $8.1\cdot10^{-5}$.
+(v) For $n=101$, $6400$ the actual $\Omega$ in Fact~5 is $7.6\cdot10^{-5}$, $1.5\cdot10^{-6}$ (bounds $5.8\cdot10^{-3}$, $8.1\cdot10^{-5}$).
 
-\sect{Test of an assumption: continuity of the payoff.} For Theorem~7(a) the payoff must be continuous at the strike, $[g]=0$. I remove this assumption by taking the digital call, $[g]=1$. 
+\sect{Test of an assumption: continuity of the payoff.} For Theorem~7(a) the payoff must be continuous at the strike, $[g]=0$. We remove this assumption by taking the digital call, $[g]=1$. 
 \emph{Experiment:} the r.m.s.\ error now decays with slope $-0.497$ rather than $-0.991$, and in the last block it is $11.4$ times the call's (Table~1, Figure~1(a)). 
 \emph{What fails:} one step, the cancellation at the end of the proof of Theorem~7. $c_1S\varphi(d_1)+c_2\e^{-rT}\varphi(d_2)=\e^{-rT}\varphi(d_2)[g]$ is no longer zero, so the lattice term $\e^{-rT}\varphi(d_2)\Delta_n/\sqrt n$ survives; Figure~1(c) shows it with the predicted slope.
-\emph{What survives:} Lemmas~4, 8 and~9 as none use the payoff convergence itself; and, by Theorem~7(b), the rate $1/n$ along every subsequence with $\Delta_n=O(n^{-1/2})$. The last column of Table~1 checks this. For the $n^*$ in each block with $\Delta_{n^*}$ nearest zero, $n^*|D_{n^*}-D|$ stays between $0.011$ and $0.073$, while in the same blocks $\sqrt n\,|D_n-D|$ reaches $0.36$. Therefore, the rate is lost only through where the discontinuity sits relative to the lattice, not from the model nor through the normal approximation.
+\emph{What survives:} Lemmas~4, 8 and~9, as none of them uses continuity of the payoff; and, by Theorem~7(b), the rate $1/n$ along every subsequence with $\Delta_n=O(n^{-1/2})$. The last column of Table~1 checks this. For the $n^*$ in each block with $\Delta_{n^*}$ nearest zero, $n^*|D_{n^*}-D|$ stays between $0.011$ and $0.073$, while in the same blocks $\sqrt n\,|D_n-D|$ reaches $0.36$. So the rate is lost only through where the discontinuity sits relative to the lattice, not through the model or the normal approximation.
 
-\sect{Justified choices.}
+\sect{Justified choice.}
 \emph{Uspensky's expansion or the Berry--Esseen theorem.} The standard quantitative CLT is the Berry--Esseen bound
-$\sup_t|\Prob((J-np)/s\le t)-\Phi(t)|\le3\rho/(\varsigma^3\sqrt n)$ [Sect.~XVI.5, Thm~1][4], where $\rho$ and $\varsigma$ are the third absolute central moment and the
-standard deviation of one trial, so $\rho/\varsigma^3=(p^2+q^2)/\sqrt{pq}$. It is more elementary, and using it would shorten Section~3.1. However, I didn't choose it for two reasons. First, applied to the two tails of Lemma~4 it yields
+$\sup_t|\Prob((J-np)/s\le t)-\Phi(t)|\le3\rho/(\varsigma^3\sqrt n)$ [4, Sect.~XVI.5, Thm~1], where $\rho$ and $\varsigma$ are the third absolute central moment and the
+standard deviation of one trial, so $\rho/\varsigma^3=(p^2+q^2)/\sqrt{pq}$. It is more elementary and would shorten Section~3.1, but we rejected it for two reasons. First, applied to the two tails of Lemma~4 it yields
 only $|C_n-C|=O(n^{-1/2})$: at $n=100$, $1000$ and $6399$ its contribution alone is $61.5$, $19.4$ and $7.7$, while the actual errors are
-$1.3\cdot10^{-2}$, $1.5\cdot10^{-3}$ and $2.3\cdot10^{-4}$. Second, the problem is structural as a supremum bound counts the
-lattice term $\varphi(\delta)\Delta_n/\sqrt n$ as error, and that term really is of order $n^{-1/2}$ in each tail. Thus, the bound is
-sharp for the digital call and cannot tell it apart from the call. Fact~5 keeps the continuity correction
+$1.3\cdot10^{-2}$, $1.5\cdot10^{-3}$ and $2.3\cdot10^{-4}$. Second, the problem is structural: a supremum bound counts the
+lattice term $\varphi(\delta)\Delta_n/\sqrt n$ as error, and that term really is of order $n^{-1/2}$ in each tail. So the bound has
+the right order for the digital call but cannot tell it apart from the call. Fact~5 keeps the continuity correction
 explicit, with an $O(1/n)$ remainder which exposes the cancellation.
-\begin {thebibliography}{9}
+\begin{thebibliography}{9}
 \bibitem{bandtlow}O.~Bandtlow, \emph{MTH6154 Financial Mathematics I}, lecture notes, Queen Mary University of London, Semester A 2024.
 \bibitem{changpalmer}L.-B.~Chang, K.~Palmer, Smooth convergence in the binomial model, \emph{Finance Stoch.}\ 11 (2007), 91--105.
 \bibitem{diener}F.~Diener, M.~Diener, Asymptotics of the price oscillations of a European call option in a tree model, \emph{Math.\ Finance} 14 (2004), 271--293.
@@ -223,25 +224,8 @@ explicit, with an $O(1/n)$ remainder which exposes the cancellation.
 \bibitem{uspensky}J.~V.~Uspensky, \emph{Introduction to Mathematical Probability}, McGraw--Hill, 1937.
 \bibitem{viitasaari}L.~Viitasaari, Rate of convergence for discrete approximation of option prices, arXiv:1207.6756v4, 2013.
 \end{thebibliography}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+% Page 5 (new page): Declaration of Authenticity and AI-use goes here, before the appendix.
 \newpage
-\section*{Appendix: code (\texttt{Code.py}, Python 3 with NumPy and Matplotlib)}
+\section*{Appendix: code (\texttt{Code.py}, \href{https://github.com/Daizn/Binomial_Model}{GitHub})}
 \lstinputlisting[language=Python]{../Code.py}
 \end{document}
