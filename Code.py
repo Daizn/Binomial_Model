@@ -162,3 +162,103 @@ def block_stats(par, ns, eC, eD, De):
 def rate(rows, key):
     #Slope of log(error)/log N
     return slope([math.log(row["N"]) for row in rows], [math.log(row[key]) for row in rows])
+
+if __name__ == "__main__":
+    # [0] checks
+    say("Checks")
+    d1, d2, C, D = bs(**BASE)
+    say("base case: d1 = %.6f  d2 = %.6f  C_BS = %.10f  D_BS = %.10f" % (d1, d2, C, D))
+    Cx, Dx = exact_bs(**BASE)
+    say("double precision minus 60-digit: C: %.1e, D: %.1e" % (C - float(Cx), D - float(Dx)))
+    say("n, |C_n(double) - C_n(60 digits)|, |D_n(double) - D_n(60 digits)|")
+    for n in (10, 100, 1000, 6399, 20000):
+        Cn, Dn, _ = crr(n=n, **BASE)
+        Cnx, Dnx = exact_crr(n=n, **BASE)
+        say("%6d  %.1e  %.1e" % (n, abs(Cn - float(Cnx)), abs(Dn - float(Dnx))))
+    say("Uspensky")
+    for n in (101, 6400):
+        say("%6d  %8.2f  %+.2e  %.2e" % ((n,) + uspensky_check(n=n, **BASE)))
+
+    # [1] main scan
+    say("\n Base case S=100, K=110, r=0.05, sigma=0.2, T=1; all n in [50, 6400)")
+    scans = {name: scan(par) for name, par in SETS}
+    ns, eC, eD, De = scans["base  K=110"]
+    rows = block_stats(BASE, ns, eC, eD, De)
+    say("block N | rms(C_n-C) | rms(D_n-D) | R_C=max sqrt(n)|n(C_n-C)-f(Delta_n)| | "
+        "R_D=max sqrt(n)|sqrt(n)(D_n-D)-g(Delta_n)| | n*: Delta nearest 0, n*|D_n*-D| | "
+        "max|C_n-C| | max|D_n-D| | max sqrt(n)|D_n-D|")
+    for row in rows:
+        say("%(N)5d  %(rmsC).3e  %(rmsD).3e  %(RC).3f  %(RD).4f   %(nstar)5d  "
+            "%(nstar_err).4f  %(maxC).3e  %(maxD).3e  %(scaledD).4f" % row)
+    say("fitted slopes of log(rms error) against log N:  call %.3f   digital %.3f" %
+        (rate(rows, "rmsC"), rate(rows, "rmsD")))
+    say("fitted slopes of log(max error) against log N:  call %.3f   digital %.3f" %
+        (rate(rows, "maxC"), rate(rows, "maxD")))
+    say("ratio rms(D_n-D) / rms(C_n-C) in the last block: %.1f" % (rows[-1]["rmsD"] / rows[-1]["rmsC"]))
+    say("predicted: n(C_n-C) between %.4f (Delta=+-1) and %.4f (Delta=0);  "
+        "sqrt(n)(D_n-D) = %.5f * Delta_n" %
+        (call_coefficient(Delta=1.0, **BASE), call_coefficient(Delta=0.0, **BASE),
+         digital_coefficient(Delta=1.0, **BASE)))
+    last = ns >= 3200
+    nC, rootnD = ns[last] * eC[last], np.sqrt(ns[last]) * eD[last]
+    say("3200<=n<6400: least-squares slope of sqrt(n)(D_n-D) on Delta_n: %.5f" %
+        slope(De[last], rootnD))
+    absC = dict(zip(ns.tolist(), np.abs(eC)))             # |C_n - C| by n
+    say("fraction of n for |C_(n+1)-C| > |C_n-C|: %.3f" %
+        np.mean(np.abs(eC[1:]) > np.abs(eC[:-1])))
+    say("doubling n: |C_250-C| = %.3e, |C_500-C| = %.3e;  |C_2n-C| > |C_n-C| for "
+        "%d of the 3150 values 50 <= n < 3200" %
+        (absC[250], absC[500], sum(absC[2 * n] > absC[n] for n in range(50, 3200))))
+
+    # [2] other parameter sets
+    say("\n Other parameters: rms slopes, and R_C, R_D in the first and last block")
+    for name, par in SETS:
+        rw = block_stats(par, *scans[name])
+        say("%-12s call slope %.3f  digital slope %.3f  R_C %.3f -> %.3f  R_D %.4f -> %.4f" %
+            (name, rate(rw, "rmsC"), rate(rw, "rmsD"),
+             rw[0]["RC"], rw[-1]["RC"], rw[0]["RD"], rw[-1]["RD"]))
+
+    # [3] large n
+    say("\n Large n, base case: n, sqrt(n)*(n(C_n-C) - f(Delta_n))")
+    for n in (10**4, 10**5, 10**6, 10**7):
+        Cn, _, Delta = crr(n=n, **BASE)
+        f = call_coefficient(Delta=Delta, **BASE)
+        say("%9d  %+.3f" % (n, math.sqrt(n) * (n * (Cn - C) - f)))
+
+    # Berry-Esseen alternative
+    say("\n Berry-Esseen bound 3*rho/(sigma^3 sqrt n) per tail, summed with weights S and K e^{-rT}")
+    for n in (100, 1000, 6399):
+        p, p_hat, _, _ = lattice(n=n, **BASE)
+        bound = BASE["S"] * berry_esseen(n, p_hat) \
+              + BASE["K"] * math.exp(-BASE["r"] * BASE["T"]) * berry_esseen(n, p)
+        say("%6d  bound %.3f   actual |C_n-C| %.3e" % (n, bound, absC[n]))
+
+    # figure: (a) errors and envelopes; (b), (c) scaled errors against Delta_n
+    plt.rcParams.update({"font.size": 7, "font.family": "serif", "mathtext.fontset": "cm"})
+    fig, (axa, axb, axc) = plt.subplots(1, 3, figsize=(7.3, 1.8))
+    dots = dict(ms=1.0, rasterized=True)
+    g1 = digital_coefficient(Delta=1.0, **BASE)
+    f1 = max(abs(call_coefficient(Delta=1.0, **BASE)), abs(call_coefficient(Delta=0.0, **BASE)))
+
+    axa.loglog(ns, np.abs(eD), ".", color="tab:orange", **dots)
+    axa.loglog(ns, np.abs(eC), ".", color="tab:blue", **dots)
+    axa.loglog(ns, g1 / np.sqrt(ns), "k-", lw=0.8, label=r"digital: $%.3f\,n^{-1/2}$" % g1)
+    axa.loglog(ns, f1 / ns, "k--", lw=0.8, label=r"call: $%.3f\,n^{-1}$" % f1)
+    axa.set(xlabel=r"$n$", title=r"(a) $|C_n-C|$, $|D_n-D|$")
+
+    grid = np.linspace(-1, 1, 201)
+    axb.plot(grid, call_coefficient(Delta=grid, **BASE), color="grey", lw=3, label=r"$f(\Delta)$")
+    axb.plot(De[last], nC, ".", color="tab:blue", **dots)
+    axb.set(xlabel=r"$\Delta_n$", title=r"(b) call: $n\,(C_n-C)$, $n\geq 3200$")
+    axc.plot(grid, digital_coefficient(Delta=grid, **BASE), color="grey", lw=3, label=r"$g(\Delta)$")
+    axc.plot(De[last], rootnD, ".", color="tab:orange", **dots)
+    axc.set(xlabel=r"$\Delta_n$", title=r"(c) digital: $\sqrt{n}\,(D_n-D)$, $n\geq 3200$")
+
+    for ax in (axa, axb, axc):
+        ax.grid(True, lw=0.3)
+        ax.legend(fontsize=6, frameon=False)
+    fig.tight_layout()
+    fig.savefig("crr_figure.pdf", dpi=400)
+    say("\nfigure written to crr_figure.pdf")
+    with open("crr_results.txt", "w") as out:
+        out.write("\n".join(LINES) + "\n")
