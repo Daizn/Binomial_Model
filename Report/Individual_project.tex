@@ -54,8 +54,8 @@
 \vspace{-7pt}
 \sect{Background and Plan.}
 The binomial model of Cox, Ross and Rubinstein (CRR) values a European option with a finite sum. For increasing $n$ number of time periods, the option price of the binomial model converges to the black-Scholes model and it was obtained in [1, Sect. 7.4] by the central limit theorem (CLT). The CLT proves the convergence theorem, but it has no rate, which is necessary in practice, as n is the cost of computation. The convergence is also not monotone since binomial prices oscillate around the limit. If n is doubled, the rate can make the error larger (Section 4).
-I prove that the the error is $O(1/n)$ for a call option, using the order $n^{-1/2}$ for the payoff with jump at the strike while including a oscillating leading term. The result is based of the expansion of the probability in binomial distributions. Next, I test from first principles the predictions using the cited formula for the coefficient of $1/n$. Section 5 tests the continutity assumption and section 6 justifies the assuptions I make.
-\emph{Key idea:} The core of my analysis is that every price combines the binomial tail probabilities and that a normal approximation with continuity correction shows that each tail carries the size $n^{-1/2}$. This records where the strike sits between two nodes of thr binomial tree, and for a continuous payoff, the two tails cancel each other out, leaving a $n^{-1}$ error. For a discontinuous payoff these terms cancel exactly.
+I prove that the the error is $O(1/n)$ for a call option, using the order $n^{-1/2}$ for the payoff with jump at the strike while including a oscillating leading term. The result is based of the expansion of the probability in binomial distributions. Next, I test from first principles the predictions using the cited formula for the coefficient of $1/n$. Section 5 tests the continutity assumption and section 6 justifies the assuptions.
+\emph{Key idea:} The core of my analysis is that every price combines the binomial tail probabilities and that a normal approximation with continuity correction shows that each tail carries the size $n^{-1/2}$. This records where the strike sits between two nodes of thr binomial tree, and for a continuous payoff, the two tails cancel each other, leaving $n^{-1}$ error. For a discontinuous payoff these terms cancel exactly.
 
 \sect{Setting and definitions.} 
 \emph{Requirements:} I assume the probability topics up to the CLT, Taylor's theorem, and from Financial Mathematics~I [1] the multi-period binomial model, its risk-neutral pricing formula and the Black-Scholes formula. I define $\varphi(t)=\e^{-t^2/2}/\sqrt{2\pi}$ and $\Phi(t)=\int_{-\infty}^{t}\varphi$, and $x_n=O(y_n)$ means $|x_n|\le My_n$ for all $n\ge n_0$, where
@@ -88,8 +88,8 @@ the first such node, and put $\theta_n=a_n-\alpha_n\in(0,1]$ and $\Delta_n=1-2\t
 \end{defn}
 So $\Delta_n=0$ when $K$ is midway (in log-price) between two neighbouring terminal nodes, and $\Delta_n=-1$ when a node is exactly at $K$.
 
-\sect{Results used.} Proving the first and the citing the other two results.
-\begin{lem}[Prices as tail probabilities]
+\sect{Results used.} Proving the first and citing the other two results. 
+\begin{lem}[Prices as tail probabilities] 
 With $J\sim\mathrm{Bin}(n,p_n)$ and $\hat J\sim\mathrm{Bin}(n,\hat p_n)$, $V_n(g)=c_1S\,\Prob(\hat J\ge a_n)+c_2\,\e^{-rT}\,\Prob(J\ge a_n)$.
 \end{lem}
 \begin{proof}
@@ -185,7 +185,6 @@ slope & $-0.991$ & $-0.497$ & & & & \\\bottomrule
 \end{tabular}
 \caption{Base case, blocks $N\le n<2N$. In the last two columns $n^*$ is the $n$ of the block with $\Delta_n$ nearest $0$ (Section~5).}
 \end{table}
-
 \begin{figure}[h]\centering
 \includegraphics[width=\textwidth]{crr_figure.pdf}
 \caption{Base case. (a) Errors for every $n$, with the envelopes predicted by Fact~6 and Theorem~7(b). (b), (c) Scaled errors against $\Delta_n$ for $3200\le n<6400$, drawn on top of the predicted curves.}
@@ -201,11 +200,20 @@ slope & $-0.991$ & $-0.497$ & & & & \\\bottomrule
 
 (v) For $n=101$, $6400$ the actual $\Omega$ in Fact~5 is $7.6\cdot10^{-5}$, $1.5\cdot10^{-6}$, within the bounds $5.8\cdot10^{-3}$, $8.1\cdot10^{-5}$.
 
+\sect{Test of an assumption: continuity of the payoff.} For Theorem~7(a) the payoff must be continuous at the strike, $[g]=0$. I remove this assumption by taking the digital call, $[g]=1$. 
+\emph{Experiment:} the r.m.s.\ error now decays with slope $-0.497$ rather than $-0.991$, and in the last block it is $11.4$ times the call's (Table~1, Figure~1(a)). 
+\emph{What fails:} one step, the cancellation at the end of the proof of Theorem~7. $c_1S\varphi(d_1)+c_2\e^{-rT}\varphi(d_2)=\e^{-rT}\varphi(d_2)[g]$ is no longer zero, so the lattice term $\e^{-rT}\varphi(d_2)\Delta_n/\sqrt n$ survives; Figure~1(c) shows it with the predicted slope.
+\emph{What survives:} Lemmas~4, 8 and~9 as none use the payoff convergence itself; and, by Theorem~7(b), the rate $1/n$ along every subsequence with $\Delta_n=O(n^{-1/2})$. The last column of Table~1 checks this. For the $n^*$ in each block with $\Delta_{n^*}$ nearest zero, $n^*|D_{n^*}-D|$ stays between $0.011$ and $0.073$, while in the same blocks $\sqrt n\,|D_n-D|$ reaches $0.36$. Therefore, the rate is lost only through where the discontinuity sits relative to the lattice, not from the model nor through the normal approximation.
 
-
-
-
-
+\sect{Justified choices.}
+\emph{Uspensky's expansion or the Berry--Esseen theorem.} The standard quantitative CLT is the Berry--Esseen bound
+$\sup_t|\Prob((J-np)/s\le t)-\Phi(t)|\le3\rho/(\varsigma^3\sqrt n)$ [Sect.~XVI.5, Thm~1][4], where $\rho$ and $\varsigma$ are the third absolute central moment and the
+standard deviation of one trial, so $\rho/\varsigma^3=(p^2+q^2)/\sqrt{pq}$. It is more elementary, and using it would shorten Section~3.1. However, I didn't choose it for two reasons. First, applied to the two tails of Lemma~4 it yields
+only $|C_n-C|=O(n^{-1/2})$: at $n=100$, $1000$ and $6399$ its contribution alone is $61.5$, $19.4$ and $7.7$, while the actual errors are
+$1.3\cdot10^{-2}$, $1.5\cdot10^{-3}$ and $2.3\cdot10^{-4}$. Second, the problem is structural as a supremum bound counts the
+lattice term $\varphi(\delta)\Delta_n/\sqrt n$ as error, and that term really is of order $n^{-1/2}$ in each tail. Thus, the bound is
+sharp for the digital call and cannot tell it apart from the call. Fact~5 keeps the continuity correction
+explicit, with an $O(1/n)$ remainder which exposes the cancellation.
 \begin {thebibliography}{9}
 \bibitem{bandtlow}O.~Bandtlow, \emph{MTH6154 Financial Mathematics I}, lecture notes, Queen Mary University of London, Semester A 2024.
 \bibitem{changpalmer}L.-B.~Chang, K.~Palmer, Smooth convergence in the binomial model, \emph{Finance Stoch.}\ 11 (2007), 91--105.
@@ -215,7 +223,4 @@ slope & $-0.991$ & $-0.497$ & & & & \\\bottomrule
 \bibitem{uspensky}J.~V.~Uspensky, \emph{Introduction to Mathematical Probability}, McGraw--Hill, 1937.
 \bibitem{viitasaari}L.~Viitasaari, Rate of convergence for discrete approximation of option prices, arXiv:1207.6756v4, 2013.
 \end{thebibliography}
-
-
-
 \end{document}
