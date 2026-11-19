@@ -160,6 +160,46 @@ $S\varphi(d_1)=K\e^{-rT}\varphi(d_2)$ (the identity used for the Greeks in [proo
 equals $\e^{-rT}\varphi(d_2)(c_1K+c_2)=\e^{-rT}\varphi(d_2)[g]$. For the call, $[g]=0$, so the $n^{-1/2}$ terms cancel.
 \end{proof}
 
+\sect{Numerical investigation.}
+\emph{Methods.} Run \texttt{python crr\_convergence.py}. It uses only arrays, elementary arithmetic, sums and cumulative products.\\
+\meth{} \emph{Normal distribution function.} $y(x)=\int_0^x\e^{-t^2/2}dt\cdot\e^{x^2/2}$ solves $y'=1+xy$, $y(0)=0$, whose power-series solution is $\sum_{k\ge0}x^{2k+1}/(1\cdot3\cdots(2k+1))$. Hence $\Phi(x)=\tfrac12+\varphi(x)\sum_{k\ge0}x^{2k+1}/(1\cdot3\cdots(2k+1))$. Every term has the sign of $x$, so nothing cancels and I stop once a term is below $10^{-18}$ of the sum.\\
+\meth{} \emph{Binomial prices.} Unnormalised weights $w_j\propto\Prob(J=j)$ are built from the mode by the exact ratios $\Prob(J=j+1)/\Prob(J=j)=(n-j)p/((j+1)q)$; after normalisation, Lemma~4 gives the prices.\\
+\meth{} \emph{Rounding error.} For $n=10,100,1000,6399,20000$ a separate routine recomputed the prices in 60-digit decimal arithmetic with exact integer binomial coefficients. The double-precision $C_n$ and $D_n$ differ by at most $5.9\cdot10^{-13}$ and $1.7\cdot10^{-12}$, and $C$, $D$ by less than $4\cdot10^{-15}$, which are measured discrepancies, not bounds.\\
+\meth{} \emph{Design.} Base case $S=100$, $K=110$, $r=0.05$, $\sigma=0.2$, $T=1$, where $C=6.040088$, $D=0.353861$, $\e^{-rT}\varphi(d_2)=0.35978$. Computing $C_n,D_n$ for \emph{all} $50\le n<6400$ and summarise each block $N\le n<2N$ by its root-mean-square error and by
+\[
+R_C(N)=\max_{N\le n<2N}\sqrt n\,\big|n(C_n-C)-f(\Delta_n)\big|,\qquad R_D(N)=\max_{N\le n<2N}\sqrt n\,\big|\sqrt n(D_n-D)-\e^{-rT}\varphi(d_2)\Delta_n\big| .
+\]
+$R_C$ stays bounded exactly when the remainder in Fact~6 is $O(n^{-3/2})$ along the scan, and $R_D$ exactly when the remainder in Theorem~7(b) is $O(1/n)$. I estimate rates by the least-squares slope of $\log(\text{r.m.s.\ error})$ against $\log N$ over the seven blocks. Block maxima(attained only when $|\Delta_n|\approx1$ early in a block) give noisier slopes, $-0.937$ and $-0.477$. Four other parameter sets repeat the scan.
+
+\begin{table}[h]\centering\footnotesize\renewcommand{\arraystretch}{0.9}
+\begin{tabular}{@{}rcccccc@{}}\toprule
+$N$ & r.m.s.\ $C_n-C$ & r.m.s.\ $D_n-D$ & $R_C(N)$ & $R_D(N)$ & $n^*$ & $n^*|D_{n^*}-D|$\\\midrule
+50   & $1.53\cdot10^{-2}$ & $2.39\cdot10^{-2}$ & 0.229 & 0.0835 & 71   & 0.073\\
+100  & $8.89\cdot10^{-3}$ & $1.74\cdot10^{-2}$ & 0.230 & 0.0856 & 110  & 0.018\\
+200  & $4.43\cdot10^{-3}$ & $1.23\cdot10^{-2}$ & 0.230 & 0.0865 & 216  & 0.046\\
+400  & $2.13\cdot10^{-3}$ & $8.67\cdot10^{-3}$ & 0.230 & 0.0858 & 744  & 0.011\\
+800  & $1.06\cdot10^{-3}$ & $6.13\cdot10^{-3}$ & 0.230 & 0.0853 & 863  & 0.021\\
+1600 & $5.25\cdot10^{-4}$ & $4.31\cdot10^{-3}$ & 0.230 & 0.0847 & 2752 & 0.018\\
+3200 & $2.68\cdot10^{-4}$ & $3.06\cdot10^{-3}$ & 0.230 & 0.0844 & 3963 & 0.025\\\midrule
+slope & $-0.991$ & $-0.497$ & & & & \\\bottomrule
+\end{tabular}
+\caption{Base case, blocks $N\le n<2N$. In the last two columns $n^*$ is the $n$ of the block with $\Delta_n$ nearest $0$ (Section~5).}
+\end{table}
+
+\begin{figure}[h]\centering
+\includegraphics[width=\textwidth]{crr_figure.pdf}
+\caption{Base case. (a) Errors for every $n$, with the envelopes predicted by Fact~6 and Theorem~7(b). (b), (c) Scaled errors against $\Delta_n$ for $3200\le n<6400$, drawn on top of the predicted curves.}
+\end{figure}
+
+\emph{Results.} (i) \emph{Rates.} Against the predicted $-1$ and $-\tfrac12$, the fitted slopes are $-0.991$ for the call and $-0.497$ for the digital (Table~1). For $K=90$; $K=100.5$; $\sigma=0.4$; and $r=0$, $T=\tfrac12$ (other parameters as in the base case) they are $-1.005,-0.960,-1.006,-1.013$ for the call and $-0.504,-0.486,-0.506,-0.503$ for the digital. Slopes like these depend on how $\Delta_n$ samples $[-1,1)$ within each block. Agreement is worst for $K=100.5$, where $\ln(K/S)$ is small and $\Delta_n$ moves slowly.
+
+(ii) \emph{Coefficients.} Sharper test compares the errors with the predicted leading terms. For $50\le n<6400$, $R_D$ stays between $0.083$ and $0.087$ which Theorem~7(b) requires; for $n\ge3200$ the least-squares slope of $\sqrt n(D_n-D)$ on $\Delta_n$ is $0.35977$, against $\e^{-rT}\varphi(d_2)=0.35978$ (Figure~1(c)). $R_C$ stays at $0.229$--$0.230$, so on this range $n(C_n-C)$ agrees with $f(\Delta_n)$ to within $0.23\,n^{-1/2}$. In Figure~1(b) the $3200$ points fall on the parabola $f$, which runs from $f(\pm1)=-2.416$ to $f(0)=1.542$. $R_C$ and $R_D$ also stay bounded in the other four parameter sets (last-block values $0.54,0.22,0.23,0.41$ and $0.100,0.017,0.059,0.117$). This alligns with Fact~6 observed on a finite range.
+
+(iii) \emph{Oscillation.} Since $f$ changes sign, $C_n-C$ does too. $|C_{n+1}-C|>|C_n-C|$ for $50.0\%$ of the $n$, and $|C_{2n}-C|>|C_n-C|$ for $702$ out of the $3150$ values $50\le n<3200$; for instance $|C_{250}-C|=1.69\cdot10^{-3}$ while $|C_{500}-C|=2.13\cdot10^{-3}$. The error is driven by $\Delta_n$.
+
+(iv) \emph{Limits of the experiment.} At $n=10^4,10^5,10^6$, $\sqrt n\,(n(C_n-C)-f(\Delta_n))$ equals $0.223,-0.163,-0.213$, still within $\pm0.23$. At $n=10^7$ it is $0.446$. By then the remainder, about $0.23\,n^{-3/2}\approx7\cdot10^{-12}$, has reached the level of the rounding error in $C_n$ (M3), rendering the test ineffective.
+
+(v) For $n=101$, $6400$ the actual $\Omega$ in Fact~5 is $7.6\cdot10^{-5}$, $1.5\cdot10^{-6}$, within the bounds $5.8\cdot10^{-3}$, $8.1\cdot10^{-5}$.
 
 
 

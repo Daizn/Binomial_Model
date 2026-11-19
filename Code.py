@@ -258,7 +258,7 @@ if __name__ == "__main__":
         ax.grid(True, lw=0.3)
         ax.legend(fontsize=6, frameon=False)
     fig.tight_layout()
-    fig.savefig("crr_figure.pdf", dpi=400)
-    say("\nfigure written to crr_figure.pdf")
-    with open("crr_results.txt", "w") as out:
+    fig.savefig("Report/crr_figure.pdf", dpi=400)
+    say("\nfigure written to Report/crr_figure.pdf")
+    with open("Report/crr_results.txt", "w") as out:
         out.write("\n".join(LINES) + "\n")

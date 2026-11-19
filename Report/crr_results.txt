@@ -46,4 +46,4 @@ r=0, T=0.5   call slope -1.013  digital slope -0.503  R_C 0.412 -> 0.408  R_D 0.
   1000  bound 19.415   actual |C_n-C| 1.524e-03
   6399  bound 7.675   actual |C_n-C| 2.320e-04
 
-figure written to crr_figure.pdf
+figure written to Report/crr_figure.pdf
