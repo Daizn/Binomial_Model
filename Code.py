@@ -59,7 +59,7 @@ def binom_tail(n, p, a):
     w = np.concatenate((below[::-1], [1.0], above))
     return float(np.sum(w[a:]) / np.sum(w))
 def crr(S, K, r, sig, T, n):
-    #use the CRR model to compute the call price and delta
+    # n-step CRR prices via Lemma 4: returns call price C_n, digital call price D_n, and Delta_n
     p, p_hat, a, Delta = lattice(S, K, r, sig, T, n)
     disc = math.exp(-r * T)
     tail = binom_tail(n, p, a)
@@ -82,7 +82,7 @@ def slope(xs, ys):
 
 #Precision check of rounding error
 def exact_bs(S, K, r, sig, T):
-    #finding black-scholes price and delta in 60 digit decimal arithmetic
+    # Black-Scholes call price C and digital call price D in 60-digit decimal arithmetic
     S, K, r, sig, T = (Decimal(str(v)) for v in (S, K, r, sig, T))
     Phi60 = lambda x: Decimal("0.5") + (-x * x / 2).exp() / (2 * PI60).sqrt() * series(x, Decimal("1e-55"))
     d1 = ((S / K).ln() + (r + sig * sig / 2) * T) / (sig * T.sqrt())
@@ -91,7 +91,7 @@ def exact_bs(S, K, r, sig, T):
     return S * Phi60(d1) - K * disc * Phi60(d2), disc * Phi60(d2)
 
 def exact_crr(S, K, r, sig, T, n):
-    #finding crr price and delta in 60 digit decimal arithmetic
+    # CRR call price C_n, digital call price D_n and Delta_n in 60-digit decimal arithmetic
     S, K, r, sig, T = (Decimal(str(v)) for v in (S, K, r, sig, T))
     s = sig * (T / n).sqrt()
     u, d = s.exp(), (-s).exp()
