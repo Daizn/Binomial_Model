@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 getcontext().prec = 60
 PI60 = Decimal("3.14159265358979323846264338327950288419716939937510582097494")
 #to store into file
-LINES= []
+LINES = []
 def say(text):
     print(text, flush=True)
     LINES.append(text)
@@ -15,12 +15,12 @@ def say(text):
 def phi(x):
     #strd norm dens
     return math.exp(-0.5 * x * x) / math.sqrt(2 * math.pi)
-def series(x,tol):
+def series(x, tol):
     # sum over k >= 0 of x^(2k+1) / (1*3*5*...*(2k+1))
     term = total = x
     k = 0
     while abs(term) > tol * abs(total):
-        k+= 1
+        k += 1
         term *= x * x / (2 * k + 1)
         total += term
     return total
@@ -35,7 +35,7 @@ def bs(S, K, r, sig, T):
     d1 = (math.log(S / K) + (r + 0.5 * sig * sig) * T) / (sig * math.sqrt(T))
     d2 = d1 - sig * math.sqrt(T)
     disc = math.exp(-r * T)
-    return d1, d2, S * Phi(d1) - K * disc* Phi(d2), disc *  Phi(d2)
+    return d1, d2, S * Phi(d1) - K * disc * Phi(d2), disc * Phi(d2)
 
 #Binomial
 def lattice(S, K, r, sig, T, n):
@@ -70,7 +70,7 @@ def call_coefficient(S, K, r, sig, T, Delta):
     d1, d2, _, _ = bs(S, K, r, sig, T)
     A = -sig**2 * T * (6 + d1**2 + d2**2) + 4 * T * (d1**2 - d2**2) * r - 12 * T**2 * r**2
     return S * math.exp(-0.5 * d1 * d1) / (24 * sig * math.sqrt(2 * math.pi * T)) \
-             * (A - 12 * sig**2 * T * (Delta**2 - 1))
+        * (A - 12 * sig**2 * T * (Delta**2 - 1))
 def digital_coefficient(S, K, r, sig, T, Delta):
     #coeff of n^(-1/2) for the digital call
     return math.exp(-r * T) * phi(bs(S, K, r, sig, T)[1]) * Delta
@@ -96,16 +96,28 @@ def exact_crr(S, K, r, sig, T, n):
     u, d = s.exp(), (-s).exp()
     p = ((r * T / n).exp() - d) / (u - d)
     p_hat = p * u * (-r * T / n).exp()
-    a = int((Decimal(n) / 2 + (K / S).ln() / (2 * s)).to_integral_value(rounding="ROUND_FLOOR")) + 1
+    alpha = Decimal(n) / 2 + (K / S).ln() / (2 * s)
+    a = int(alpha.to_integral_value(rounding="ROUND_FLOOR")) + 1
+    tiny = Decimal("1e-80")
     def tail(prob):
-        coeff, total = math.comb(n, a), Decimal(0)
-        for j in range(a, n + 1):
-            total += Decimal(coeff) * prob**j * (1 - prob)**(n - j)
-            coeff = coeff * (n - j) // (j + 1)        # exact: C(n,j+1) = C(n,j)(n-j)/(j+1)
-        return total
+        q = 1 - prob
+        m = int((n + 1) * prob)
+        total, upper, w = Decimal(1), Decimal(1 if m >= a else 0), Decimal(1)
+        for j in range(m, n):
+            w = w * (n - j) * prob / ((j + 1) * q)
+            total += w
+            if j + 1 >= a: upper += w
+            if w < tiny: break
+        w = Decimal(1)
+        for j in range(m, 0, -1):
+            w = w * j * q / ((n - j + 1) * prob)
+            total += w
+            if j - 1 >= a: upper += w
+            if w < tiny: break
+        return upper / total
     disc = (-r * T).exp()
     tail_p = tail(p)
-    return S * tail(p_hat) - K * disc * tail_p, disc * tail_p
+    return S * tail(p_hat) - K * disc * tail_p, disc * tail_p, 1 - 2 * (a - alpha)
 
 #uspensky and berry-esseen
 def uspensky_check(S, K, r, sig, T, n):
@@ -148,12 +160,17 @@ def block_stats(par, ns, eC, eD, De):
             maxC=np.max(np.abs(c)), maxD=np.max(np.abs(d)),
             RC=np.max(np.sqrt(n) * np.abs(n * c - f[m])),
             RD=np.max(np.sqrt(n) * np.abs(np.sqrt(n) * d - g[m])),
-            nstar=int(n[k]), nstar_err=n[k] * abs(d[k]), scaledD=np.max(np.sqrt(n) * np.abs(d))))
+            nstar=int(n[k]), Dstar=De[m][k], nstar_err=n[k] * abs(d[k]),
+            scaledD=np.max(np.sqrt(n) * np.abs(d))))
     return rows
 
 def rate(rows, key):
     #Slope of log(error)/log N
     return slope([math.log(row["N"]) for row in rows], [math.log(row[key]) for row in rows])
+
+def rate_range(rows, key):
+    fits = [rate(rows[:i] + rows[i + 1:], key) for i in range(len(rows))]
+    return min(fits), max(fits)
 
 if __name__ == "__main__":
     # [0] checks
@@ -162,12 +179,7 @@ if __name__ == "__main__":
     say("base case: d1 = %.6f  d2 = %.6f  C_BS = %.10f  D_BS = %.10f" % (d1, d2, C, D))
     Cx, Dx = exact_bs(**BASE)
     say("double precision minus 60-digit: C: %.1e, D: %.1e" % (C - float(Cx), D - float(Dx)))
-    say("n, |C_n(double) - C_n(60 digits)|, |D_n(double) - D_n(60 digits)|")
-    for n in (10, 100, 1000, 6399, 20000):
-        Cn, Dn, _ = crr(n=n, **BASE)
-        Cnx, Dnx = exact_crr(n=n, **BASE)
-        say("%6d  %.1e  %.1e" % (n, abs(Cn - float(Cnx)), abs(Dn - float(Dnx))))
-    say("Uspensky")
+    say("Uspensky: n, s^2, Omega, bound")
     for n in (101, 6400):
         say("%6d  %8.2f  %+.2e  %.2e" % ((n,) + uspensky_check(n=n, **BASE)))
 
@@ -176,14 +188,15 @@ if __name__ == "__main__":
     scans = {name: scan(par) for name, par in SETS}
     ns, eC, eD, De = scans["base  K=110"]
     rows = block_stats(BASE, ns, eC, eD, De)
-    say("block N | rms(C_n-C) | rms(D_n-D) | R_C=max sqrt(n)|n(C_n-C)-f(Delta_n)| | "
-        "R_D=max sqrt(n)|sqrt(n)(D_n-D)-g(Delta_n)| | n*: Delta nearest 0, n*|D_n*-D| | "
+    say("block N | rms(C_n-C) | rms(D_n-D) | R_C | R_D | n* | Delta_n* | n*|D_n*-D| | "
         "max|C_n-C| | max|D_n-D| | max sqrt(n)|D_n-D|")
     for row in rows:
-        say("%(N)5d  %(rmsC).3e  %(rmsD).3e  %(RC).3f  %(RD).4f   %(nstar)5d  "
+        say("%(N)5d  %(rmsC).3e  %(rmsD).3e  %(RC).3f  %(RD).4f   %(nstar)5d  %(Dstar)+.1e  "
             "%(nstar_err).4f  %(maxC).3e  %(maxD).3e  %(scaledD).4f" % row)
     say("fitted slopes of log(rms error) against log N:  call %.3f   digital %.3f" %
         (rate(rows, "rmsC"), rate(rows, "rmsD")))
+    say("leave-one-block-out range:  call [%.3f, %.3f]   digital [%.3f, %.3f]" %
+        (rate_range(rows, "rmsC") + rate_range(rows, "rmsD")))
     say("fitted slopes of log(max error) against log N:  call %.3f   digital %.3f" %
         (rate(rows, "maxC"), rate(rows, "maxD")))
     say("ratio rms(D_n-D) / rms(C_n-C) in the last block: %.1f" % (rows[-1]["rmsD"] / rows[-1]["rmsC"]))
@@ -194,24 +207,28 @@ if __name__ == "__main__":
     last = ns >= 3200
     nC, rootnD = ns[last] * eC[last], np.sqrt(ns[last]) * eD[last]
     say("3200<=n<6400: least-squares slope of sqrt(n)(D_n-D) on Delta_n: %.5f" % slope(De[last], rootnD))
+    say("3200<=n<6400: max sqrt(n)|D_n-D| = %.4f, min Delta_n = %+.5f" % (np.max(np.abs(rootnD)), De[last].min()))
     absC = dict(zip(ns.tolist(), np.abs(eC)))             # |C_n - C| by n
-    say("fraction of n for |C_(n+1)-C| > |C_n-C|: %.3f" % np.mean(np.abs(eC[1:]) > np.abs(eC[:-1])))
     say("doubling n: |C_250-C| = %.3e, |C_500-C| = %.3e;  |C_2n-C| > |C_n-C| for "
         "%d of the 3150 values 50 <= n < 3200" %
         (absC[250], absC[500], sum(absC[2 * n] > absC[n] for n in range(50, 3200))))
 
     # [2] other parameter sets
-    say("\n Other parameters: rms slopes, and R_C, R_D in the first and last block")
+    say("\n Other parameters: rms slopes with leave-one-block-out ranges, and R_C, R_D in the first and last block")
     for name, par in SETS:
         rw = block_stats(par, *scans[name])
-        say("%-12s call slope %.3f  digital slope %.3f  R_C %.3f -> %.3f  R_D %.4f -> %.4f" %
-            (name, rate(rw, "rmsC"), rate(rw, "rmsD"), rw[0]["RC"], rw[-1]["RC"], rw[0]["RD"], rw[-1]["RD"]))
+        say("%-12s call %.3f [%.3f, %.3f]  digital %.3f [%.3f, %.3f]  R_C %.3f -> %.3f  R_D %.4f -> %.4f" %
+            ((name, rate(rw, "rmsC")) + rate_range(rw, "rmsC") + (rate(rw, "rmsD"),) + rate_range(rw, "rmsD")
+             + (rw[0]["RC"], rw[-1]["RC"], rw[0]["RD"], rw[-1]["RD"])))
 
     # [3] large n
-    say("\n Large n, base case: n, sqrt(n)*(n(C_n-C) - f(Delta_n))")
-    for n in (10**4, 10**5, 10**6, 10**7):
-        Cn, _, Delta = crr(n=n, **BASE)
-        say("%9d  %+.3f" % (n, math.sqrt(n) * (n * (Cn - C) - call_coefficient(Delta=Delta, **BASE))))
+    say("\n n | |C_n(double)-C_n(60)| | |D_n(double)-D_n(60)| | sqrt(n)(n(C_n-C)-f(Delta_n)) in double | same in 60 digits")
+    for n in (10, 100, 1000, 6399, 20000, 10**5, 10**6, 10**7):
+        Cn, Dn, Delta = crr(n=n, **BASE)
+        Cnx, Dnx, Deltax = exact_crr(n=n, **BASE)
+        stat = math.sqrt(n) * (n * (Cn - C) - call_coefficient(Delta=Delta, **BASE))
+        statx = math.sqrt(n) * (n * float(Cnx - Cx) - call_coefficient(Delta=float(Deltax), **BASE))
+        say("%9d  %.1e  %.1e  %+.3f  %+.3f" % (n, abs(Cn - float(Cnx)), abs(Dn - float(Dnx)), stat, statx))
 
     # Berry-Esseen alternative
     say("\n Berry-Esseen bound 3*rho/(sigma^3 sqrt n) per tail, summed with weights S and K e^{-rT}")

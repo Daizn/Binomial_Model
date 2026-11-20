@@ -1,45 +1,44 @@
 Checks
 base case: d1 = -0.126551  d2 = -0.326551  C_BS = 6.0400881297  D_BS = 0.3538609539
 double precision minus 60-digit: C: 3.6e-15, D: -1.1e-16
-n, |C_n(double) - C_n(60 digits)|, |D_n(double) - D_n(60 digits)|
-    10  1.2e-14  1.6e-15
-   100  2.0e-14  8.0e-15
-  1000  6.5e-14  4.1e-14
-  6399  5.0e-14  7.9e-13
- 20000  5.9e-13  1.7e-12
-Uspensky
+Uspensky: n, s^2, Omega, bound
    101     25.24  +7.63e-05  5.79e-03
   6400   1599.99  +1.47e-06  8.15e-05
 
  Base case S=100, K=110, r=0.05, sigma=0.2, T=1; all n in [50, 6400)
-block N | rms(C_n-C) | rms(D_n-D) | R_C=max sqrt(n)|n(C_n-C)-f(Delta_n)| | R_D=max sqrt(n)|sqrt(n)(D_n-D)-g(Delta_n)| | n*: Delta nearest 0, n*|D_n*-D| | max|C_n-C| | max|D_n-D| | max sqrt(n)|D_n-D|
-   50  1.534e-02  2.387e-02  0.229  0.0835      71  0.0726  3.305e-02  4.353e-02  0.3642
-  100  8.890e-03  1.737e-02  0.230  0.0856     110  0.0183  2.038e-02  3.431e-02  0.3625
-  200  4.434e-03  1.233e-02  0.230  0.0865     216  0.0457  1.078e-02  2.460e-02  0.3607
-  400  2.134e-03  8.667e-03  0.230  0.0858     744  0.0113  5.423e-03  1.727e-02  0.3628
-  800  1.062e-03  6.125e-03  0.230  0.0853     863  0.0207  2.727e-03  1.224e-02  0.3606
- 1600  5.246e-04  4.311e-03  0.230  0.0847    2752  0.0182  1.354e-03  8.558e-03  0.3609
- 3200  2.677e-04  3.064e-03  0.230  0.0844    3963  0.0254  7.424e-04  6.349e-03  0.3609
+block N | rms(C_n-C) | rms(D_n-D) | R_C | R_D | n* | Delta_n* | n*|D_n*-D| | max|C_n-C| | max|D_n-D| | max sqrt(n)|D_n-D|
+   50  1.534e-02  2.387e-02  0.229  0.0835      71  +1.5e-02  0.0726  3.305e-02  4.353e-02  0.3642
+  100  8.890e-03  1.737e-02  0.230  0.0856     110  -1.9e-03  0.0183  2.038e-02  3.431e-02  0.3625
+  200  4.434e-03  1.233e-02  0.230  0.0865     216  +3.8e-03  0.0457  1.078e-02  2.460e-02  0.3607
+  400  2.134e-03  8.667e-03  0.230  0.0858     744  -1.4e-03  0.0113  5.423e-03  1.727e-02  0.3628
+  800  1.062e-03  6.125e-03  0.230  0.0853     863  -4.3e-04  0.0207  2.727e-03  1.224e-02  0.3606
+ 1600  5.246e-04  4.311e-03  0.230  0.0847    2752  -3.7e-04  0.0182  1.354e-03  8.558e-03  0.3609
+ 3200  2.677e-04  3.064e-03  0.230  0.0844    3963  +5.2e-06  0.0254  7.424e-04  6.349e-03  0.3609
 fitted slopes of log(rms error) against log N:  call -0.991   digital -0.497
+leave-one-block-out range:  call [-1.015, -0.982]   digital [-0.502, -0.496]
 fitted slopes of log(max error) against log N:  call -0.937   digital -0.477
 ratio rms(D_n-D) / rms(C_n-C) in the last block: 11.4
 predicted: n(C_n-C) between -2.4160 (Delta=+-1) and 1.5416 (Delta=0);  sqrt(n)(D_n-D) = 0.35978 * Delta_n
 3200<=n<6400: least-squares slope of sqrt(n)(D_n-D) on Delta_n: 0.35977
-fraction of n for |C_(n+1)-C| > |C_n-C|: 0.500
+3200<=n<6400: max sqrt(n)|D_n-D| = 0.3609, min Delta_n = -0.99743
 doubling n: |C_250-C| = 1.694e-03, |C_500-C| = 2.131e-03;  |C_2n-C| > |C_n-C| for 702 of the 3150 values 50 <= n < 3200
 
- Other parameters: rms slopes, and R_C, R_D in the first and last block
-base  K=110  call slope -0.991  digital slope -0.497  R_C 0.229 -> 0.230  R_D 0.0835 -> 0.0844
-K=90         call slope -1.005  digital slope -0.504  R_C 0.549 -> 0.543  R_D 0.1009 -> 0.0999
-K=100.5      call slope -0.960  digital slope -0.486  R_C 0.186 -> 0.219  R_D 0.0155 -> 0.0171
-sig=0.4      call slope -1.006  digital slope -0.506  R_C 0.223 -> 0.232  R_D 0.0636 -> 0.0588
-r=0, T=0.5   call slope -1.013  digital slope -0.503  R_C 0.412 -> 0.408  R_D 0.1143 -> 0.1173
+ Other parameters: rms slopes with leave-one-block-out ranges, and R_C, R_D in the first and last block
+base  K=110  call -0.991 [-1.015, -0.982]  digital -0.497 [-0.502, -0.496]  R_C 0.229 -> 0.230  R_D 0.0835 -> 0.0844
+K=90         call -1.005 [-1.011, -0.991]  digital -0.504 [-0.507, -0.497]  R_C 0.549 -> 0.543  R_D 0.1009 -> 0.0999
+K=100.5      call -0.960 [-0.988, -0.908]  digital -0.486 [-0.494, -0.466]  R_C 0.186 -> 0.219  R_D 0.0155 -> 0.0171
+sig=0.4      call -1.006 [-1.014, -0.982]  digital -0.506 [-0.508, -0.496]  R_C 0.223 -> 0.232  R_D 0.0636 -> 0.0588
+r=0, T=0.5   call -1.013 [-1.015, -1.010]  digital -0.503 [-0.503, -0.502]  R_C 0.412 -> 0.408  R_D 0.1143 -> 0.1173
 
- Large n, base case: n, sqrt(n)*(n(C_n-C) - f(Delta_n))
-    10000  +0.223
-   100000  -0.163
-  1000000  -0.213
- 10000000  +0.446
+ n | |C_n(double)-C_n(60)| | |D_n(double)-D_n(60)| | sqrt(n)(n(C_n-C)-f(Delta_n)) in double | same in 60 digits
+       10  1.2e-14  1.6e-15  +0.211  +0.211
+      100  2.0e-14  8.0e-15  -0.103  -0.103
+     1000  6.5e-14  4.1e-14  +0.052  +0.052
+     6399  5.0e-14  7.9e-13  +0.075  +0.075
+    20000  5.9e-13  1.7e-12  +0.200  +0.200
+   100000  3.4e-12  1.4e-11  -0.163  -0.163
+  1000000  1.2e-12  6.0e-11  -0.213  -0.214
+ 10000000  1.4e-11  1.7e-09  +0.446  -0.008
 
  Berry-Esseen bound 3*rho/(sigma^3 sqrt n) per tail, summed with weights S and K e^{-rT}
    100  bound 61.456   actual |C_n-C| 1.314e-02
