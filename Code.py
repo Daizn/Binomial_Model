@@ -1,11 +1,12 @@
 import math
+import os
 from decimal import Decimal, getcontext
 import numpy as np
 import matplotlib.pyplot as plt
-#validation of pi
+# 60-digit decimal arithmetic for the rounding-error check (M3), and pi to 60 digits
 getcontext().prec = 60
 PI60 = Decimal("3.14159265358979323846264338327950288419716939937510582097494")
-#to store into file
+# every line printed by say() is also saved to Report/crr_results.txt at the end
 LINES = []
 def say(text):
     print(text, flush=True)
@@ -13,7 +14,7 @@ def say(text):
 
 #normal
 def phi(x):
-    #strd norm dens
+    # standard normal density phi(x)
     return math.exp(-0.5 * x * x) / math.sqrt(2 * math.pi)
 def series(x, tol):
     # sum over k >= 0 of x^(2k+1) / (1*3*5*...*(2k+1))
@@ -25,7 +26,7 @@ def series(x, tol):
         total += term
     return total
 def Phi(x):
-    # strd norm dist func
+    # standard normal distribution function Phi(x) = 1/2 + phi(x) * series(x)  (M1)
     if abs(x) > 8:
         return 1.0 if x > 0 else 0.0
     return 0.5 + phi(x) * series(x, 1e-18)
@@ -75,7 +76,7 @@ def digital_coefficient(S, K, r, sig, T, Delta):
     #coeff of n^(-1/2) for the digital call
     return math.exp(-r * T) * phi(bs(S, K, r, sig, T)[1]) * Delta
 def slope(xs, ys):
-    #least squ of y/x
+    # least-squares slope of the straight-line fit of ys against xs
     mx, my = sum(xs) / len(xs), sum(ys) / len(ys)
     return sum((x - mx) * (y - my) for x, y in zip(xs, ys)) / sum((x - mx) ** 2 for x in xs)
 
@@ -121,7 +122,7 @@ def exact_crr(S, K, r, sig, T, n):
 
 #uspensky and berry-esseen
 def uspensky_check(S, K, r, sig, T, n):
-    #remainder omega and bound
+    # Uspensky remainder Omega for the tail [a_n, n] (Fact 5), and its upper bound
     p, _, a, _ = lattice(S, K, r, sig, T, n)
     q = 1.0 - p
     s = math.sqrt(n * p * q)
@@ -130,7 +131,7 @@ def uspensky_check(S, K, r, sig, T, n):
     return s * s, omega, (0.13 + 0.18 * abs(p - q)) / s**2 + math.exp(-1.5 * s)
 
 def berry_esseen(n, p):
-    #bound
+    # Berry-Esseen bound 3*rho/(sigma^3 sqrt n) for Bin(n, p), with rho/sigma^3 = (p^2+q^2)/sqrt(pq)
     return 3 * (p * p + (1 - p) ** 2) / math.sqrt(n * p * (1 - p))
 
 #Experiment section
@@ -140,7 +141,7 @@ SETS = [("base  K=110", BASE), ("K=90", dict(BASE, K=90.0)), ("K=100.5", dict(BA
 BLOCKS = [50, 100, 200, 400, 800, 1600, 3200]
 
 def scan(par, n_lo=50, n_hi=6400):
-    #For every n in ...: n, C_n - C, D_n - D, Delta_n."""
+    # for every n in [n_lo, n_hi): returns n, C_n - C, D_n - D, Delta_n
     _, _, C, D = bs(**par)
     ns = np.arange(n_lo, n_hi)
     prices = np.array([crr(n=int(n), **par) for n in ns])
@@ -169,10 +170,14 @@ def rate(rows, key):
     return slope([math.log(row["N"]) for row in rows], [math.log(row[key]) for row in rows])
 
 def rate_range(rows, key):
+    # smallest and largest slope over the refits that leave out one block (sensitivity check)
     fits = [rate(rows[:i] + rows[i + 1:], key) for i in range(len(rows))]
     return min(fits), max(fits)
 
 if __name__ == "__main__":
+    # outputs go into a Report folder next to where the script is run (created if missing)
+    os.makedirs("Report", exist_ok=True)
+
     # [0] checks
     say("Checks")
     d1, d2, C, D = bs(**BASE)
